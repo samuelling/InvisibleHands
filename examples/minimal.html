@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invisible Hands: the smallest app</title>
+<style>
+html,body{margin:0;height:100%;background:#101418;color:#e9e4d6;font:15px/1.45 system-ui,sans-serif}
+main{max-width:480px;margin:0 auto;padding:20px 16px}
+#dot{width:120px;height:120px;border-radius:50%;margin:24px auto;background:hsl(160 70% 60%)}
+label{display:grid;grid-template-columns:70px 1fr;gap:10px;align-items:center;margin-top:8px}
+input[type=range]{width:100%}
+</style>
+</head>
+<body>
+<main>
+  <h1>The smallest app</h1>
+  <p>A dot with two controls. Everything Invisible Hands needs is the block of script at the bottom of this file.</p>
+  <div id="dot"></div>
+  <label>Size<input id="size" type="range" min="0" max="1" step="0.001" value="0.5"></label>
+  <label>Hue<input id="hue" type="range" min="0" max="1" step="0.001" value="0.44"></label>
+  <div id="link" style="margin-top:24px"></div>
+</main>
+<script src="../invisible-hands.js"></script>
+<script>
+const size=document.getElementById('size'),hue=document.getElementById('hue'),dot=document.getElementById('dot');
+let pulse=0;
+function draw(){
+  dot.style.transform='scale('+(0.3+1.2*size.value)+')';
+  dot.style.background='hsl('+Math.round(hue.value*360)+' 70% 60%)';
+}
+size.oninput=hue.oninput=draw;draw();
+setInterval(()=>{pulse=0.5+0.5*Math.sin(Date.now()/700);},50);
+
+// ---- everything Invisible Hands needs ----
+const hands=InvisibleHands.create({
+  app:'smallest-app',name:'The smallest app',
+  params:[
+    {id:'size',label:'Size',get:()=>+size.value,set:v=>{size.value=v;draw();}},
+    {id:'hue', label:'Hue', get:()=>+hue.value, set:v=>{hue.value=v;draw();}}
+  ],
+  outs:[{id:'pulse',label:'Pulse',get:()=>pulse}]
+});
+document.getElementById('link').appendChild(hands.panel());
+window.HANDS=hands;
+</script>
+</body>
+</html>

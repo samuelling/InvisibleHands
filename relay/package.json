@@ -1,0 +1,14 @@
+{
+  "name": "invisible-hands-relay",
+  "private": true,
+  "type": "module",
+  "description": "Room relay for Invisible Hands: a Cloudflare Worker with a Durable Object per room, plus a local Node server for development.",
+  "scripts": {
+    "dev": "node dev-server.mjs",
+    "test": "node test.mjs",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
