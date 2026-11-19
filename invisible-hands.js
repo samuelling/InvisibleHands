@@ -15,7 +15,7 @@
   var VERSION = 1;
   // The relay every app uses unless told otherwise. Override with create({relay}), window.INVISIBLE_HANDS_RELAY,
   // or ?relay=wss://... in the address.
-  var DEFAULT_RELAY = '';
+  var DEFAULT_RELAY = 'wss://invisible-hands.samuelling.workers.dev';
   var WORDS = ('moss kiln opal fern dusk reed salt wren pine silk rust plum mint coal lark dune ' +
     'echo flax gale haze iris jade kelp loam moth nest onyx peat quay rook sage tide ' +
     'vole wasp yarn zinc bark clay dove elm fawn glow hush ink jute knot lime mist ' +

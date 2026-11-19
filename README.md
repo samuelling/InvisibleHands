@@ -68,7 +68,7 @@ npx wrangler login
 npx wrangler deploy
 ```
 
-Wrangler prints an address like `https://invisible-hands.<you>.workers.dev`. Put it, as `wss://…`, in `DEFAULT_RELAY` near the top of `invisible-hands.js`. Until then an app needs `?relay=wss://…` in its address, or `relay:` in `create()`.
+Wrangler prints an address like `https://invisible-hands.<you>.workers.dev`. Put it, as `wss://…`, in `DEFAULT_RELAY` near the top of `invisible-hands.js`. The deployed relay is `wss://invisible-hands.samuelling.workers.dev`, already set there; `?relay=wss://…` or `relay:` in `create()` still override it.
 
 The relay keeps a guest list for each room and nothing else. It checks every message against the limits in `SPEC.md`, stamps it with its sender, and passes it on. It stores no values.
 
@@ -83,5 +83,5 @@ node test.mjs ws://localhost:8787      # the same checks against any running rel
 ## What is and is not here yet
 
 - Built and tested: the relay (locally, both the Node version and the real Cloudflare worker under `wrangler dev`), the drop-in file, the console, the example.
-- Not done: the relay has not been deployed, so there is no built-in relay address yet.
+- Deployed: the relay runs at `wss://invisible-hands.samuelling.workers.dev` (19 Nov 2026), and `node test.mjs` passes against it. The Chamber sites use it.
 - Not built: a Swift version for iPhone apps. The protocol is plain JSON over a WebSocket, so it is a small file when wanted.
