@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invisible Hands</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23ECEDE9%22/%3E%3Ctext x=%2217%22 y=%2226%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%23F2369B%22%3EH%3C/text%3E%3Ctext x=%2215%22 y=%2224%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%2318181B%22%3EH%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&family=Courier+Prime:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../site/site.css">
+<style>
+/* the console: the same clippings-on-paper look as the site */
+main { max-width: 900px; margin: 0 auto; padding: 0 16px 60px; }
+.cmast { padding: 26px 0 18px; border-bottom: 2px solid var(--toner); margin-bottom: 18px; }
+.cmast h1 { font: 400 clamp(2.2rem, 8vw, 3.6rem)/.9 var(--display); margin: 10px 0 8px; text-shadow: 3px 3px 0 var(--pink); }
+.cmast h1 span { font-family: var(--body); font-weight: 600; color: var(--blue); letter-spacing: -.03em; text-shadow: none; }
+.lede { font-size: 1rem; max-width: 56ch; color: var(--muted); }
+h2 { font: 700 .76rem/1 var(--type); letter-spacing: .14em; text-transform: uppercase; color: var(--blue); margin: 0 0 10px; }
+section { background: var(--sheet); border: 1px solid var(--rule); padding: 18px 16px 16px; margin-top: 22px; position: relative; }
+section::before { content: ""; position: absolute; top: -9px; left: 50%; width: 70px; height: 17px; transform: translateX(-50%) rotate(-3deg); background: color-mix(in srgb, var(--blue) 22%, transparent); border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+@media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+label.f { display: grid; grid-template-columns: 92px 1fr 64px; gap: 10px; align-items: center; font: 700 .8rem var(--type); margin-top: 8px; }
+label.f output { font-weight: 400; text-align: right; }
+input[type=range] { width: 100%; accent-color: var(--blue); min-height: 30px; }
+input[type=text] { font: 1rem var(--body); color: inherit; background: var(--paper); border: 1.5px solid var(--rule); padding: 8px 10px; min-height: 40px; width: 100%; }
+button { font: 700 .78rem/1 var(--type); color: var(--toner); background: transparent; border: 1.5px solid var(--toner); padding: 8px 11px; min-height: 36px; cursor: pointer; }
+button:hover { background: var(--blue); border-color: var(--blue); color: var(--paper); }
+button[aria-pressed="true"] { background: var(--pink); border-color: var(--pink); color: #fff; }
+.peer h3 { font: 400 1.4rem/1.05 var(--display); margin: 0; }
+.peer .app { font: 400 .8rem var(--type); color: var(--muted); margin: 2px 0 8px; }
+.row { display: grid; grid-template-columns: minmax(110px, 170px) 1fr auto auto; gap: 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--rule); }
+.row:first-of-type { border-top: 0; }
+.row .name { font: 700 .84rem var(--type); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 560px) { .row { grid-template-columns: 1fr auto auto; } .row .name { grid-column: 1 / -1; } }
+.outs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 14px; margin-top: 12px; }
+.meter { font: 700 .76rem var(--type); color: var(--muted); }
+.meter i { display: block; height: 8px; background: color-mix(in srgb, var(--toner) 8%, transparent); border: 1px solid var(--rule); margin-top: 3px; }
+.meter i b { display: block; height: 100%; width: 0; background: var(--blue); }
+.empty { color: var(--muted); font-family: var(--type); }
+.small { font: 400 .82rem/1.45 var(--type); color: var(--muted); margin-top: 10px; }
+.ih-dot.on { background: #22a06b !important; }
+/* the built-in panel, in house style */
+.ih button, .ih input[type=text] { border-radius: 0 !important; border: 1.5px solid var(--toner) !important; font: 700 .78rem/1 var(--type) !important; min-height: 38px; }
+.ih input[type=text] { font: 1rem var(--body) !important; background: var(--paper) !important; }
+.ih button:hover { background: var(--blue); border-color: var(--blue) !important; color: var(--paper); }
+.ih-code { color: var(--blue); font-family: var(--type) !important; font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+  <header class="cmast">
+    <div class="kicker"><a href="../">Invisible Hands</a><span>The console</span><span class="r"><a href="../docs/">Docs</a> · <a href="https://megazine.org/">megaZINE</a></span></div>
+    <h1>CON<span>sole</span></h1>
+    <p class="lede">Move another app's controls from anywhere. Join the same room as an app that has Invisible Hands in it, and its controls appear below: drag one, set an LFO swinging it, or fire an envelope at it.</p>
+  </header>
+
+  <div class="grid">
+    <section aria-labelledby="hLink">
+      <h2 id="hLink">Room</h2>
+      <div id="link"></div>
+      <div id="relayRow" hidden>
+        <p class="small">No relay address is built in yet. Paste one (it starts with <code>wss://</code>):</p>
+        <input id="relay" type="text" placeholder="wss://…" aria-label="Relay address" autocapitalize="none" autocomplete="off" spellcheck="false">
+      </div>
+    </section>
+    <section aria-labelledby="hHand">
+      <h2 id="hHand">The hands</h2>
+      <label class="f">LFO rate<input id="rate" type="range" min="0" max="100" value="45"><output id="rateOut"></output></label>
+      <label class="f">LFO depth<input id="depth" type="range" min="0" max="100" value="35"><output id="depthOut"></output></label>
+      <label class="f">Env attack<input id="att" type="range" min="0" max="100" value="30"><output id="attOut"></output></label>
+      <label class="f">Env decay<input id="dec" type="range" min="0" max="100" value="60"><output id="decOut"></output></label>
+      <p class="small">An LFO swings a control around wherever its owner left it. An envelope rises to the top and falls back, and is played on the far machine so the network cannot roughen it.</p>
+    </section>
+  </div>
+
+  <div id="peers"></div>
+</main>
+
+<script src="../invisible-hands.js"></script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const hands=InvisibleHands.create({app:'console',name:'Console'});
+$('link').appendChild(hands.panel());
+
+// a relay address typed here is remembered on this device only
+if(!hands.relay){
+  $('relayRow').hidden=false;
+  try{const r=localStorage.getItem('ih-relay');if(r){hands.relay=r;$('relay').value=hands.relay;}}catch(err){}
+  $('relay').addEventListener('change',e=>{hands.relay=e.target.value.trim();e.target.value=hands.relay;try{localStorage.setItem('ih-relay',hands.relay);}catch(err){}});
+}
+
+// ---- hand settings ----
+const H={rate:1,depth:0.35,att:200,dec:800};
+function settings(){
+  H.rate=0.05*Math.pow(100,$('rate').value/100);            // 0.05 to 5 Hz
+  H.depth=$('depth').value/100;
+  H.att=Math.round(5*Math.pow(1000,$('att').value/100));     // 5 ms to 5 s
+  H.dec=Math.round(20*Math.pow(500,$('dec').value/100));     // 20 ms to 10 s
+  $('rateOut').textContent=H.rate<1?H.rate.toFixed(2)+' Hz':H.rate.toFixed(1)+' Hz';
+  $('depthOut').textContent=Math.round(H.depth*100)+'%';
+  $('attOut').textContent=H.att<1000?H.att+' ms':(H.att/1000).toFixed(1)+' s';
+  $('decOut').textContent=H.dec<1000?H.dec+' ms':(H.dec/1000).toFixed(1)+' s';
+}
+for(const id of ['rate','depth','att','dec'])$(id).addEventListener('input',settings);
+settings();
+
+// ---- LFOs: one sine per control that has its LFO button on, sent as `mod` twenty times a second ----
+const lfos=new Map();   // "peer/param" -> {peer, p, t0}
+setInterval(()=>{
+  const now=performance.now()/1000;
+  for(const [key,l] of lfos){
+    if(!hands.peers.some(q=>q.id===l.peer)){lfos.delete(key);continue;}
+    hands.mod(l.peer,l.p,H.depth*Math.sin(2*Math.PI*H.rate*(now-l.t0)));
+  }
+},50);
+
+// ---- the room's apps and their controls ----
+const meters=new Map();   // "peer/out" -> the bar element
+function render(){
+  const box=$('peers');box.textContent='';meters.clear();
+  const list=hands.peers;
+  if(hands.status==='on'&&!list.length){const s=document.createElement('section');s.className='empty';s.textContent='Nobody else is in this room yet. Open an app with the invite link, or send the link to someone.';box.appendChild(s);return;}
+  for(const peer of list){
+    const sec=document.createElement('section');sec.className='peer';
+    const h=document.createElement('h3');h.textContent=peer.name;sec.appendChild(h);
+    const a=document.createElement('p');a.className='app';a.textContent=peer.app+' · '+peer.params.length+(peer.params.length===1?' control':' controls');sec.appendChild(a);
+    if(!peer.params.length){const n=document.createElement('p');n.className='small';n.textContent='This app has no controls to move.';sec.appendChild(n);}
+    for(const p of peer.params){
+      const row=document.createElement('div');row.className='row';
+      const name=document.createElement('span');name.className='name';name.textContent=p.label;name.title=p.id;
+      const s=document.createElement('input');s.type='range';s.min=0;s.max=1000;s.value=Math.round((p.value||0)*1000);s.setAttribute('aria-label',p.label+' on '+peer.name);
+      let last=0,timer=0;
+      const push=()=>{last=performance.now();hands.set(peer.id,p.id,s.value/1000);};
+      s.addEventListener('input',()=>{clearTimeout(timer);const wait=33-(performance.now()-last);if(wait<=0)push();else timer=setTimeout(push,wait);});
+      const key=peer.id+'/'+p.id;
+      const lfo=document.createElement('button');lfo.type='button';lfo.textContent='LFO';lfo.setAttribute('aria-pressed',String(lfos.has(key)));lfo.setAttribute('aria-label','LFO on '+p.label);
+      lfo.addEventListener('click',()=>{
+        if(lfos.has(key)){lfos.delete(key);hands.mod(peer.id,p.id,0);}else lfos.set(key,{peer:peer.id,p:p.id,t0:performance.now()/1000});
+        lfo.setAttribute('aria-pressed',String(lfos.has(key)));
+      });
+      const env=document.createElement('button');env.type='button';env.textContent='Env';env.setAttribute('aria-label','Envelope on '+p.label);
+      // the start time is set a little ahead on the relay's clock, so every copy of the app begins together
+      env.addEventListener('click',()=>hands.ramp(peer.id,p.id,[[H.att,1],[H.dec,0]],hands.serverNow()+80));
+      row.append(name,s,lfo,env);sec.appendChild(row);
+    }
+    if(peer.outs.length){
+      const o=document.createElement('div');o.className='outs';
+      for(const q of peer.outs){
+        const m=document.createElement('div');m.className='meter';m.textContent=q.label;
+        const i=document.createElement('i'),b=document.createElement('b');i.appendChild(b);m.appendChild(i);o.appendChild(m);
+        meters.set(peer.id+'/'+q.id,b);
+        if(peer.state[q.id]!==undefined)b.style.width=Math.round(peer.state[q.id]*100)+'%';
+      }
+      sec.appendChild(o);
+    }
+    box.appendChild(sec);
+  }
+}
+hands.on('peers',render);hands.on('status',render);
+hands.on('state',peer=>{for(const k in peer.state){const b=meters.get(peer.id+'/'+k);if(b)b.style.width=Math.round(peer.state[k]*100)+'%';}});
+render();
+window.HANDS=hands;
+</script>
+</body>
+</html>

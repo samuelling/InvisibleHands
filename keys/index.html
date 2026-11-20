@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Invisible Hands · keys (editors)</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23ECEDE9%22/%3E%3Ctext x=%2217%22 y=%2226%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%23F2369B%22%3EH%3C/text%3E%3Ctext x=%2215%22 y=%2224%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%2318181B%22%3EH%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&family=Courier+Prime:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../site/site.css">
+<style>
+main { padding-bottom: 40px; }
+label { display: block; font: 700 .8rem var(--type); letter-spacing: .06em; text-transform: uppercase; margin: 12px 0 4px; }
+label small { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); }
+input[type=text], input[type=password], input[type=number], textarea { width: 100%; font: 1rem var(--body); color: inherit; background: var(--paper); border: 1.5px solid var(--rule); padding: 8px 10px; }
+textarea { min-height: 70px; }
+.tick { display: flex; gap: 8px; align-items: center; text-transform: none; letter-spacing: 0; font-weight: 700; cursor: pointer; }
+.tick input { width: 18px; height: 18px; accent-color: var(--pink); }
+.bar { height: 14px; border: 1.5px solid var(--toner); background: var(--paper); position: relative; margin: 6px 0; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blue); }
+.bar.hot i { background: var(--pink); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; vertical-align: top; padding: 8px 8px 8px 0; border-bottom: 1px solid var(--rule); }
+th { font: 700 .72rem var(--type); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--toner); }
+td code { word-break: break-all; }
+.off td { opacity: .5; }
+.newkey { font: 700 1.1rem var(--type); color: var(--pink); word-break: break-all; }
+.err { color: var(--pink); font: 700 .9rem var(--type); }
+.tablewrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<header class="wrap mast" style="padding-bottom:18px">
+  <div class="kicker"><a href="../">Invisible Hands</a><span>Editors only</span><span class="r"><a href="../docs/#key">How people ask</a></span></div>
+  <h1 class="logo" id="logo" aria-label="Keys"><span class="ink">KEYS</span><span class="mis" aria-hidden="true">KEYS</span></h1>
+  <p class="lede">Hand out keys, switch them off, see what this month has cost.</p>
+</header>
+<main class="wrap">
+  <section class="clip" id="login" style="margin-top:28px;max-width:520px">
+    <h3>Passphrase</h3>
+    <p class="small">The relay’s <code>ADMIN_TOKEN</code>. Kept in this tab only, forgotten when it closes.</p>
+    <label for="tok">Passphrase</label><input type="password" id="tok" autocomplete="current-password">
+    <p style="margin-top:12px"><button class="btn primary" id="go" type="button">Open</button> <span class="err" id="login-err"></span></p>
+  </section>
+
+  <div id="app" hidden>
+    <div class="sect"><h2>This month</h2><p id="month"></p></div>
+    <article class="clip"><div id="usage"></div></article>
+
+    <div class="sect"><h2>Issue a key</h2><p>For a request that came in through the finger guns or the BBS.</p></div>
+    <div class="board two">
+      <article class="clip">
+        <label for="owner">Who <small>their name or handle</small></label><input type="text" id="owner" maxlength="80">
+        <label for="appn">App</label><input type="text" id="appn" maxlength="80">
+        <label for="origins">Websites <small>one per line, e.g. https://friend.github.io</small></label><textarea id="origins"></textarea>
+        <label class="tick"><input type="checkbox" id="native"> Also works from programs (a native key: Python, command line)</label>
+        <label class="tick"><input type="checkbox" id="editor"> Editor key (no monthly ceiling; Sam and Matt only)</label>
+        <label for="monthly">Monthly frames <small>blank for the default</small></label><input type="number" id="monthly" min="0" step="100000">
+        <label for="note">Note <small>where they asked, what it’s for</small></label><textarea id="note" maxlength="400"></textarea>
+        <p style="margin-top:14px"><button class="btn primary" id="make" type="button">Issue the key</button> <span class="err" id="make-err"></span></p>
+      </article>
+      <article class="clip" id="made" hidden>
+        <span class="kind">New key</span>
+        <p class="newkey" id="newkey"></p>
+        <span class="kind">Reply to send them</span>
+        <div class="codewrap"><pre class="code" id="reply" style="white-space:pre-wrap"></pre><button class="copy" type="button" data-copy="reply">Copy</button></div>
+      </article>
+    </div>
+
+    <div class="sect"><h2>Keys</h2><p>Switching a key off takes up to a minute to reach every connection.</p></div>
+    <div class="tablewrap"><table id="keys"></table></div>
+  </div>
+</main>
+<footer class="wrap"><span>Invisible Hands · keys</span><span><a href="../">Home</a></span></footer>
+<script src="../site/site.js"></script>
+<script>
+(function () {
+  'use strict';
+  var RELAY = new URLSearchParams(location.search).get('relay') || 'https://invisible-hands.samuelling.workers.dev';
+  RELAY = RELAY.replace(/^ws/, 'http').replace(/\/+$/, '');
+  var $ = function (id) { return document.getElementById(id); }, token = '';
+  try { token = sessionStorage.getItem('ih-admin') || ''; } catch (err) {}
+  function el(tag, text, cls) { var e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; }
+  function call(path, body) {
+    return fetch(RELAY + '/admin' + path, { method: body ? 'POST' : 'GET', headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); });
+  }
+  var fmt = function (n) { return n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n); };
+  function load() {
+    return call('/keys').then(function (d) {
+      $('login').hidden = true; $('app').hidden = false;
+      var now = d.usage.now, s = d.settings, frac = s.monthly ? now.frames / s.monthly : 0;
+      $('month').textContent = now.month + ' · ' + fmt(now.frames) + ' of ' + fmt(s.monthly) + ' frames · about ' + fmt(Math.round(now.frames / 20)) + ' billed requests (1M a month are included)';
+      var u = $('usage'); u.textContent = '';
+      var bar = el('div', undefined, 'bar' + (frac > 0.8 ? ' hot' : '')), fill = el('i'); fill.style.width = Math.min(100, frac * 100).toFixed(1) + '%'; bar.appendChild(fill); u.appendChild(bar);
+      if (frac >= 1) u.appendChild(el('p', 'The ceiling is reached: only editor keys can connect until the 1st. Raise MONTHLY_FRAMES in wrangler.toml and redeploy to open it.', 'err'));
+      var who = Object.keys(now.who || {}).sort(function (a, b) { return now.who[b].n - now.who[a].n; });
+      var t = el('table'), h = el('tr'); ['Who', 'Frames this month', 'Ceiling'].forEach(function (x) { h.appendChild(el('th', x)); }); t.appendChild(h);
+      var names = {}; d.keys.forEach(function (k) { names[k.key] = (k.owner || '?') + (k.app ? ' · ' + k.app : ''); });
+      who.forEach(function (w) { var r = el('tr'); r.appendChild(el('td', w[0] === '@' ? w.slice(1) + ' (house)' : names[w] || w)); r.appendChild(el('td', fmt(now.who[w].n))); r.appendChild(el('td', now.who[w].limit ? fmt(now.who[w].limit) : '—')); t.appendChild(r); });
+      if (!who.length) u.appendChild(el('p', 'Nothing yet this month.', 'small')); else u.appendChild(t);
+      if (d.usage.last) u.appendChild(el('p', 'Last month (' + d.usage.last.month + '): ' + fmt(d.usage.last.frames) + ' frames.', 'small'));
+
+      var kt = $('keys'); kt.textContent = '';
+      var hh = el('tr'); ['Key', 'Who · app', 'Works from', 'Ceiling', 'Note', ''].forEach(function (x) { hh.appendChild(el('th', x)); }); kt.appendChild(hh);
+      d.keys.sort(function (a, b) { return String(b.made).localeCompare(String(a.made)); }).forEach(function (k) {
+        var r = el('tr'); if (k.status !== 'ok') r.className = 'off';
+        var kc = el('td'); kc.appendChild(el('code', k.key)); r.appendChild(kc);
+        r.appendChild(el('td', (k.owner || '?') + (k.app ? ' · ' + k.app : '') + (k.editor ? ' · editor' : '')));
+        r.appendChild(el('td', (k.origins || []).join(' ') + (k.native ? (k.origins && k.origins.length ? ' + ' : '') + 'programs' : '')));
+        r.appendChild(el('td', k.editor ? 'none' : fmt(k.monthly || s.perKey)));
+        r.appendChild(el('td', k.note || ''));
+        var acts = el('td');
+        [[k.status === 'ok' ? 'off' : 'on', k.status === 'ok' ? 'Switch off' : 'Switch on'], ['reset', 'Fresh allowance']].forEach(function (a) {
+          var b = el('button', a[1], 'btn small'); b.type = 'button';
+          b.onclick = function () { b.disabled = true; call('/keys/' + k.key + '/' + a[0], {}).then(load, function (e) { alert(e.message); b.disabled = false; }); };
+          acts.appendChild(b); acts.appendChild(document.createTextNode(' '));
+        });
+        r.appendChild(acts); kt.appendChild(r);
+      });
+    });
+  }
+  $('go').onclick = function () {
+    token = $('tok').value.trim(); $('login-err').textContent = '';
+    load().then(function () { try { sessionStorage.setItem('ih-admin', token); } catch (err) {} }, function (e) { $('login-err').textContent = /fetch/i.test(e.message) ? 'Can’t reach the relay (is the new version deployed?)' : e.message; });
+  };
+  $('tok').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('go').click(); });
+  $('make').onclick = function () {
+    $('make-err').textContent = '';
+    var body = { owner: $('owner').value, app: $('appn').value, origins: $('origins').value, native: $('native').checked, editor: $('editor').checked, note: $('note').value };
+    if ($('monthly').value) body.monthly = +$('monthly').value;
+    call('/keys', body).then(function (k) {
+      $('made').hidden = false; $('newkey').textContent = k.key;
+      var where = (k.origins.length ? 'It works from ' + k.origins.join(' and ') : '') + (k.native ? (k.origins.length ? ', and from programs (keep it private: an environment variable, not public code)' : 'It works from programs. Keep it private: an environment variable, not public code') : '') + '.';
+      $('reply').textContent = 'Hi ' + (k.owner || '') + ',\n\nHere is your Invisible Hands key' + (k.app ? ' for ' + k.app : '') + ':\n\n    ' + k.key + '\n\n' + where + '\n\nIn a web page: InvisibleHands.create({ ..., key: \'' + k.key + '\' })\nIn Python: Hands(..., key=\'' + k.key + '\')\n\nIt comes with ' + fmt(k.editor ? 0 : k.monthly) + ' frames a month. The libraries bundle moves into frames for you; if you hit the ceiling, write back.\nDocs: https://samuelling.github.io/InvisibleHands/docs/\n\nSam & Matt, megaZINE';
+      ['owner', 'appn', 'origins', 'note', 'monthly'].forEach(function (id) { $(id).value = ''; }); $('native').checked = $('editor').checked = false;
+      return load();
+    }, function (e) { $('make-err').textContent = e.message; });
+  };
+  if (token) load().catch(function () { $('login').hidden = false; });
+})();
+</script>
+</body>
+</html>

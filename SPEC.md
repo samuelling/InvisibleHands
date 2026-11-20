@@ -9,8 +9,10 @@ Think of control voltage with a phone line in the middle: every value is 0 to 1,
 Open a WebSocket to the relay:
 
 ```
-wss://<relay>/room/<code>?app=<slug>&name=<display name>
+wss://<relay>/room/<code>?app=<slug>&name=<display name>[&key=<key>]
 ```
+
+- `key`: needed by every app outside the editors' own sites. Ask for one on the website (`#key`). A key is tied to the websites it may be used from (the browser's `Origin`), so it can sit in a page. A *native* key also works with no website, for programs; keep those private.
 
 - `code`: 4 to 48 characters, `a-z 0-9 -`. Whoever starts the room invents it; everyone else is given it.
 - `app`: a short slug for the kind of app (`gaborgrove`, `mega-cv`). `name`: what people see.
@@ -19,10 +21,10 @@ wss://<relay>/room/<code>?app=<slug>&name=<display name>
 The relay answers at once:
 
 ```json
-{"t":"welcome","v":1,"id":"k3x9qa","now":1795000000000,"peers":[{"id":"p7m2zd","app":"gaborgrove","name":"Gabor Grove"}]}
+{"t":"welcome","v":1,"batch":true,"id":"k3x9qa","now":1795000000000,"peers":[{"id":"p7m2zd","app":"gaborgrove","name":"Gabor Grove"}]}
 ```
 
-`id` is yours for this connection. `now` is the relay's clock in milliseconds.
+`id` is yours for this connection. `now` is the relay's clock in milliseconds. `batch: true` means this relay takes batch frames (below).
 
 ## Messages
 
@@ -34,8 +36,21 @@ The relay answers at once:
 | `ramp` | a source | `p`, `pts: [[ms, v], …]`, optional `at` | Move `p` through these points, each taking `ms` to reach `v`. The destination plays it locally. |
 | `state` | any app with outputs | `outs: {id: v, …}` | "My outputs are now these." Sent a few times a second, only when they change. |
 | `ping` | anyone | `n` | The relay answers `{"t":"pong","n":n,"now":…}`. |
+| `batch` | anyone | `m: [message, …]` (up to 32) | Several `set`, `mod`, `ramp` or `state` messages in one frame, each with its own `to`. The relay delivers them one by one, so receivers never see a batch. Only send one when `welcome.batch` is true. |
 
-From the relay: `welcome`, `join` (`peer: {id, app, name}`), `leave` (`id`), `pong`, and `error` (`code`: `bad`, `size` or `rate`).
+From the relay: `welcome`, `join` (`peer: {id, app, name}`), `leave` (`id`), `pong`, and `error` (`code`: `bad`, `size`, `rate`, `flood`, `key`, `quota` or `busy`, sometimes with `why`, a sentence to show the person).
+
+### When the relay says no
+
+A refused or ended connection closes with one of these codes. Don't retry the first four: show `why` instead.
+
+| Code | Means | Do |
+|---|---|---|
+| 4001 | No key, or not one of ours | Stop. The app needs a key. |
+| 4003 | Key switched off, or used from another website | Stop. |
+| 4008 | Kept flooding after being told | Stop. Fix the sending loop. |
+| 4029 | This month's allowance is used (the relay's, or this key's) | Stop until next month. |
+| 4030 | Too many new connections from one place, or the room is full | Wait a minute, then try again. |
 
 Every message the relay passes on carries `from`, the sender's id, set by the relay. It cannot be forged.
 
@@ -50,6 +65,17 @@ Add `to` to any message you send:
 - nothing: everyone else
 
 You never receive your own messages.
+
+## Saving frames
+
+Every incoming frame costs the relay the same, however small. So:
+
+- Send a value only when it has changed. The same value to the same control again within 4 seconds is a wasted frame.
+- Put moves made in the same moment into one `batch`.
+- Send `state` only for outputs that changed, plus everything once when someone joins. No "still here" repeats.
+- Ping three times on joining to learn the clock, then every 5 minutes, not more often.
+
+The JavaScript and Python libraries do all four.
 
 ## Timing
 
@@ -77,7 +103,10 @@ The internet adds delay and jitter, typically 30 to 150 ms.
 | Outputs in one `describe` or `state` | 64 |
 | Points in one `ramp` | 32, each up to 10 minutes |
 | Text fields | 64 characters, control characters removed |
-| Rate | 240 at once, refilling at 120 a second, per connection |
+| Rate | 240 at once, refilling at 120 a second, per connection (each message in a batch counts) |
+| Floods | more than 480 messages dropped for speed within 30 seconds closes the connection (4008) |
+| New connections | 30 a minute from one IP address, 120 a minute with one key |
+| Monthly | a ceiling for the whole relay, and one for each key (2 million frames unless the editors set another) |
 
 Unknown message types and unknown fields are dropped. Values that are not numbers are refused.
 

@@ -1,4 +1,5 @@
-// A local relay for development: the same rules as the Cloudflare worker (core.js), on Node.
+// A local relay for development: the same message rules as the Cloudflare worker (core.js), on Node.
+// It has no keys and no monthly ceiling: everyone is let in. Use `npx wrangler dev` to try those.
 //   cd relay && npm install && node dev-server.mjs          -> ws://localhost:8787
 //   PORT=9000 node dev-server.mjs                           -> another port
 
@@ -31,7 +32,8 @@ server.on('upgrade', (req, socket, head) => {
     ws.on('message', (data, isBinary) => {
       const r = handle(isBinary ? null : data.toString('utf8'), me, roster(), me.bucket, Date.now());
       if (r.reply) tell(me, r.reply);
-      if (r.send) for (const id of r.to) { const p = room.get(id); if (p) tell(p, r.send); }
+      if (r.sends) for (const s of r.sends) for (const id of s.to) { const p = room.get(id); if (p) tell(p, s.send); }
+      if (r.close) ws.close(r.close, 'too many messages');
     });
     const gone = () => {
       if (!room.delete(me.id)) return;

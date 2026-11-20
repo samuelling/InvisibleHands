@@ -1,156 +1,341 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Invisible Hands</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Invisible Hands · reach into other apps and turn their knobs</title>
+<meta name="description" content="Invisible Hands: a small free protocol for turning the knobs of one app from another app, anywhere on the internet. From megaZINE.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23ECEDE9%22/%3E%3Ctext x=%2217%22 y=%2226%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%23F2369B%22%3EH%3C/text%3E%3Ctext x=%2215%22 y=%2224%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%2318181B%22%3EH%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&family=Courier+Prime:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site/site.css">
 <style>
-:root{--bg:#0d1014;--panel:#161b22;--line:#2a323d;--ink:#e9e4d6;--dim:#8d97a5;--hand:#5fe0c0;--warm:#e8b04a;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:860px;margin:0 auto;padding:22px 16px 60px}
-h1{font:italic 500 30px/1.1 Georgia,"Times New Roman",serif;margin:0 0 4px;letter-spacing:.01em}
-h2{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--hand);margin:0 0 10px}
-p{margin:0}
-.lede{color:var(--dim);max-width:56ch}
-section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:16px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media (max-width:700px){.grid{grid-template-columns:1fr}}
-label.f{display:grid;grid-template-columns:92px 1fr 64px;gap:10px;align-items:center;font-size:13px;color:var(--dim);margin-top:8px}
-label.f output{font-family:var(--mono);font-size:12px;color:var(--ink);text-align:right}
-input[type=range]{width:100%;accent-color:var(--hand);min-height:28px}
-input[type=text]{font:inherit;color:inherit;background:transparent;border:1px solid var(--line);border-radius:10px;padding:7px 10px;min-height:38px;width:100%}
-button{font:inherit;color:inherit;background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 12px;min-height:34px;cursor:pointer}
-button:hover{border-color:var(--dim)}
-button[aria-pressed="true"]{background:var(--hand);border-color:var(--hand);color:#06201b}
-button:focus-visible,input:focus-visible{outline:2px solid var(--hand);outline-offset:2px}
-.peer h3{font-size:17px;font-weight:600;margin:0}
-.peer .app{font-family:var(--mono);font-size:12px;color:var(--dim)}
-.row{display:grid;grid-template-columns:minmax(110px,170px) 1fr auto auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
-.row:first-of-type{border-top:0}
-.row .name{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media (max-width:560px){.row{grid-template-columns:1fr auto auto}.row .name{grid-column:1/-1}}
-.outs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 14px;margin-top:12px}
-.meter{font-size:12px;color:var(--dim)}
-.meter i{display:block;height:6px;border-radius:3px;background:var(--line);margin-top:3px;overflow:hidden}
-.meter i b{display:block;height:100%;width:0;background:var(--warm);border-radius:3px}
-.empty{color:var(--dim)}
-.small{font-size:12.5px;color:var(--dim);margin-top:10px}
-code{font-family:var(--mono);font-size:.92em}
+/* the knobs in the masthead that nobody is touching */
+.ghost { position: absolute; right: 150px; top: 78px; display: flex; gap: 14px; align-items: flex-end; }
+.ghost figure { margin: 0; display: grid; justify-items: center; gap: 4px; font: 700 .62rem/1 var(--type); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.knob { width: 46px; height: 46px; border-radius: 50%; border: 2px solid var(--toner); background: var(--sheet); position: relative; box-shadow: 3px 3px 0 var(--pink); }
+.knob::after { content: ""; position: absolute; left: 50%; top: 4px; width: 3px; height: 15px; margin-left: -1.5px; background: var(--toner); border-radius: 2px; }
+.knob.a { animation: turn-a 5.5s ease-in-out infinite; } .knob.b { animation: turn-b 7.3s ease-in-out infinite; } .knob.c { animation: turn-c 3.9s steps(1) infinite; }
+@keyframes turn-a { 0%,100% { transform: rotate(-110deg); } 40% { transform: rotate(80deg); } 55% { transform: rotate(60deg); } }
+@keyframes turn-b { 0%,100% { transform: rotate(30deg); } 30% { transform: rotate(-90deg); } 70% { transform: rotate(120deg); } }
+@keyframes turn-c { 0% { transform: rotate(-60deg); } 50% { transform: rotate(60deg); } }
+.ghost .nobody { position: absolute; left: 0; right: 0; top: 100%; margin-top: 10px; text-align: center; font: 400 .74rem/1.2 var(--type); color: var(--muted); white-space: nowrap; }
+@media (max-width: 900px) { .ghost { display: none; } }
+@media (prefers-reduced-motion: reduce) { .knob { animation: none !important; } }
+.blot-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.own .ctl { grid-template-columns: minmax(84px, 110px) 1fr; }
+.allow { font: 700 .82rem var(--type); display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.allow input { width: 18px; height: 18px; accent-color: var(--pink); }
+.inbox-flash { transition: box-shadow .4s; } .inbox-flash.hit { box-shadow: 0 0 0 3px var(--pink); transition: none; }
+canvas.view.pend { aspect-ratio: 4 / 3; }
+canvas.view.sim { aspect-ratio: 5 / 2; }
+.legend-row { display: flex; flex-wrap: wrap; gap: 6px 18px; font: 700 .78rem var(--type); }
+.legend-row i { display: inline-block; width: 18px; height: 4px; vertical-align: middle; margin-right: 6px; }
+.big-cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin: 4px 0 26px; }
+.prompt { font: 400 .9rem/1.45 var(--type); background: color-mix(in srgb, var(--blue) 9%, var(--paper)); border: 1.5px dashed var(--blue); padding: 10px 12px; }
+.wired { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 24px; }
 </style>
 </head>
 <body>
-<main>
-  <h1>Invisible Hands</h1>
-  <p class="lede">Move another app's controls from anywhere. Join the same room as an app that has Invisible Hands in it, and its controls appear below: drag one, set an LFO swinging it, or fire an envelope at it.</p>
 
-  <div class="grid">
-    <section aria-labelledby="hLink">
-      <h2 id="hLink">Room</h2>
-      <div id="link"></div>
-      <div id="relayRow" hidden>
-        <p class="small">No relay address is built in yet. Paste one (it starts with <code>wss://</code>):</p>
-        <input id="relay" type="text" placeholder="wss://…" aria-label="Relay address" autocapitalize="none" autocomplete="off" spellcheck="false">
-      </div>
-    </section>
-    <section aria-labelledby="hHand">
-      <h2 id="hHand">The hands</h2>
-      <label class="f">LFO rate<input id="rate" type="range" min="0" max="100" value="45"><output id="rateOut"></output></label>
-      <label class="f">LFO depth<input id="depth" type="range" min="0" max="100" value="35"><output id="depthOut"></output></label>
-      <label class="f">Env attack<input id="att" type="range" min="0" max="100" value="30"><output id="attOut"></output></label>
-      <label class="f">Env decay<input id="dec" type="range" min="0" max="100" value="60"><output id="decOut"></output></label>
-      <p class="small">An LFO swings a control around wherever its owner left it. An envelope rises to the top and falls back, and is played on the far machine so the network cannot roughen it.</p>
-    </section>
+<header class="wrap mast">
+  <div class="kicker"><a href="https://megazine.org/">megaZINE</a><span>Issue 03 · December 2026</span><span>A protocol</span><span>Free</span><span class="r"><a href="docs/">Docs</a> · <a href="console/">Console</a> · <a href="https://github.com/samuelling/InvisibleHands">Source</a></span></div>
+  <h1 class="logo" id="logo" aria-label="Invisible Hands"><span class="ink">INVISIBLE<span class="lc">hands</span></span><span class="mis" aria-hidden="true">INVISIBLE<span class="lc">hands</span></span></h1>
+  <p class="lede">Reach into someone else’s app and <em>turn its knobs</em>. From another tab, another house, another country.</p>
+  <div class="mast-links">
+    <a class="btn big primary" href="#try">Try it right here ↓</a>
+    <a class="btn big" href="#build">Put it in your app</a>
+  </div>
+  <div class="ghost" aria-hidden="true">
+    <figure><span class="knob a"></span>Wobble</figure>
+    <figure><span class="knob b"></span>Hue</figure>
+    <figure><span class="knob c"></span>Chaos</figure>
+    <span class="nobody">(nobody is touching these)</span>
+  </div>
+  <div id="seal-slot"></div>
+</header>
+
+<main>
+<!-- ===== THE IDEA ===== -->
+<section class="wrap" aria-labelledby="idea-h">
+  <div class="sect"><h2 id="idea-h"><span class="num">The idea</span>Three panels, no jargon</h2></div>
+  <div class="idea">
+    <article class="clip" style="--tilt:-.8deg;--tape:-4deg">
+      <span class="step">1</span>
+      <svg viewBox="0 0 300 170" aria-hidden="true">
+        <rect x="20" y="16" width="260" height="140" fill="var(--paper)" stroke="var(--toner)" stroke-width="2.5"/>
+        <rect x="20" y="16" width="260" height="20" fill="var(--toner)"/>
+        <circle cx="32" cy="26" r="4" fill="var(--paper)"/><circle cx="45" cy="26" r="4" fill="var(--paper)"/>
+        <text x="150" y="30" text-anchor="middle" font-family="Courier Prime, monospace" font-size="11" font-weight="700" fill="var(--paper)">your-app.html</text>
+        <g stroke="var(--toner)" stroke-width="2.5" fill="var(--sheet)">
+          <circle cx="75" cy="90" r="22"/><circle cx="150" cy="90" r="22"/><circle cx="225" cy="90" r="22"/></g>
+        <g stroke="var(--toner)" stroke-width="3.5" stroke-linecap="round">
+          <line x1="75" y1="90" x2="75" y2="72"><animateTransform attributeName="transform" type="rotate" values="-60 75 90;70 75 90;-60 75 90" dur="4s" repeatCount="indefinite"/></line>
+          <line x1="150" y1="90" x2="166" y2="80"/><line x1="225" y1="90" x2="212" y2="76"/></g>
+        <g font-family="Courier Prime, monospace" font-size="11" font-weight="700" fill="var(--muted)" text-anchor="middle"><text x="75" y="134">SPEED</text><text x="150" y="134">COLOUR</text><text x="225" y="134">WOBBLE</text></g>
+        <rect x="200" y="40" width="70" height="16" fill="var(--pink)" opacity=".9" transform="rotate(4 235 48)"/><text x="235" y="52" text-anchor="middle" font-family="Courier Prime, monospace" font-size="10" font-weight="700" fill="#fff" transform="rotate(4 235 48)">TURN ME</text>
+      </svg>
+      <h3>Your app has knobs</h3>
+      <p>It makes a short list of things it wouldn’t mind someone else turning. Speed. Colour. Wobble. The big button that makes it go <i>sploosh</i>.</p>
+    </article>
+    <article class="clip" style="--tilt:.6deg;--tape:3deg">
+      <span class="step">2</span>
+      <svg viewBox="0 0 300 170" aria-hidden="true">
+        <rect x="8" y="50" width="96" height="74" fill="var(--paper)" stroke="var(--toner)" stroke-width="2.5"/>
+        <rect x="196" y="50" width="96" height="74" fill="var(--paper)" stroke="var(--toner)" stroke-width="2.5"/>
+        <text x="56" y="142" text-anchor="middle" font-family="Courier Prime, monospace" font-size="10" font-weight="700" fill="var(--muted)">A TAB IN OSLO</text>
+        <text x="244" y="142" text-anchor="middle" font-family="Courier Prime, monospace" font-size="10" font-weight="700" fill="var(--muted)">A PHONE IN OHIO</text>
+        <path d="M104 86 C 140 10, 160 160, 196 86" fill="none" stroke="var(--blue)" stroke-width="3" stroke-dasharray="7 6"><animate attributeName="stroke-dashoffset" values="0;-26" dur=".8s" repeatCount="indefinite"/></path>
+        <circle cx="150" cy="86" r="16" fill="var(--sheet)" stroke="var(--toner)" stroke-width="2"/><text x="150" y="91" text-anchor="middle" font-family="Courier Prime, monospace" font-size="10" font-weight="700" fill="var(--toner)">ROOM</text>
+        <circle cx="56" cy="88" r="17" fill="var(--sheet)" stroke="var(--toner)" stroke-width="2.5"/>
+        <line x1="56" y1="88" x2="56" y2="74" stroke="var(--toner)" stroke-width="3.5" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" values="-70 56 88;80 56 88;-70 56 88" dur="3s" repeatCount="indefinite"/></line>
+        <g transform="translate(222 60)" fill="none" stroke="var(--pink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".9">
+          <path d="M8 44 V18 Q8 13 12 13 Q16 13 16 18 V34 M16 30 V10 Q16 5 20 5 Q24 5 24 10 V30 M24 28 V12 Q24 7 28 7 Q32 7 32 12 V32 M32 30 V18 Q32 13 36 13 Q40 13 40 18 V40 Q40 56 26 56 Q14 56 8 44"/>
+          <animateTransform attributeName="transform" type="translate" values="222 60;218 58;222 60" dur="3s" repeatCount="indefinite"/></g>
+      </svg>
+      <h3>Someone, somewhere, turns them</h3>
+      <p>Another app joins the same <b>room</b> (a code like <code>moss-kiln-opal-fern-42</code>) and its hands reach in. It might be a synth, a phone, a script, a friend. Your app does what it’s told, within the rules you set.</p>
+    </article>
+    <article class="clip" style="--tilt:-.4deg;--tape:-2deg">
+      <span class="step">3</span>
+      <svg viewBox="0 0 300 170" aria-hidden="true">
+        <rect x="8" y="50" width="96" height="74" fill="var(--paper)" stroke="var(--toner)" stroke-width="2.5"/>
+        <rect x="196" y="50" width="96" height="74" fill="var(--paper)" stroke="var(--toner)" stroke-width="2.5"/>
+        <path d="M30 100 Q 42 66, 56 100 T 82 100" fill="none" stroke="var(--blue)" stroke-width="3"><animate attributeName="d" values="M30 100 Q 42 66, 56 100 T 82 100;M30 100 Q 42 130, 56 100 T 82 100;M30 100 Q 42 66, 56 100 T 82 100" dur="1.6s" repeatCount="indefinite"/></path>
+        <path d="M104 74 C 140 30, 160 30, 196 74" fill="none" stroke="var(--pink)" stroke-width="3" marker-end="url(#arr)"/>
+        <defs><marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--pink)"/></marker></defs>
+        <rect x="216" y="70" width="56" height="34" fill="var(--sheet)" stroke="var(--toner)" stroke-width="2"/>
+        <rect x="216" y="70" width="30" height="34" fill="var(--blue)"><animate attributeName="width" values="8;54;8" dur="1.6s" repeatCount="indefinite"/></rect>
+        <text x="56" y="142" text-anchor="middle" font-family="Courier Prime, monospace" font-size="10" font-weight="700" fill="var(--muted)">A BEAT</text>
+        <text x="244" y="142" text-anchor="middle" font-family="Courier Prime, monospace" font-size="10" font-weight="700" fill="var(--muted)">MOVES A SLIDER</text>
+      </svg>
+      <h3>And it talks back</h3>
+      <p>Apps can publish their own wiggles too (a beat, a loudness, a sway) as <b>outputs</b>. Anyone in the room can plug those into somebody else’s knob. Then it gets weird.</p>
+    </article>
   </div>
 
-  <div id="peers"></div>
+  <div class="analogy">
+    <blockquote><b>It’s a patch cable.</b> On a modular synth any output can go into any input. Here the modules are apps and the cable is the entire internet.</blockquote>
+    <blockquote><b>It’s a remote you lend out.</b> You choose which buttons are on it. You can take it back with one tick box. Your own hands always win.</blockquote>
+    <blockquote><b>It’s a séance for software.</b> Things in your app move by themselves, pushed by someone you can’t see. That’s the name.</blockquote>
+  </div>
+
+  <dl class="words">
+    <div><dt>Room <small>where apps meet</small></dt><dd>A made-up code. Everyone who has it is in the same room. Up to 16 apps.</dd></div>
+    <div><dt>Control <small>a knob</small></dt><dd>Something an app lets others move. Always a number from 0 to 1.</dd></div>
+    <div><dt>Output <small>a wiggle</small></dt><dd>Something an app sends out for others to use, also 0 to 1.</dd></div>
+    <div><dt>Set <small>put it there</small></dt><dd>“Put Speed at 0.7.”</dd></div>
+    <div><dt>Swing <small>an LFO; “mod”</small></dt><dd>“Wobble Speed up and down around wherever its owner left it.”</dd></div>
+    <div><dt>Envelope <small>a shape; “ramp”</small></dt><dd>“Jump up, then fall back slowly.” Sent once and played at the far end, so the internet can’t smudge it.</dd></div>
+  </dl>
+</section>
+
+<!-- ===== DEMO 1 ===== -->
+<section class="wrap" id="try" aria-labelledby="try-h">
+  <div class="sect"><h2 id="try-h"><span class="num">Demo 1 · Set, swing, envelope</span>A hand and a blot</h2>
+    <p>Two little apps on this page, linked through the real relay as if they were on two continents.</p></div>
+  <div class="demo-bar">
+    <button class="btn big primary" id="plug" type="button">Plug them in</button>
+    <span class="st"><span class="dot" id="dot"></span><span id="st">Not linked. Nothing has been sent.</span></span>
+    <span class="small" id="roomline" hidden>Room <span class="room" id="room"></span></span>
+  </div>
+  <div class="board two">
+    <article class="clip inbox-flash" id="blot-clip" style="--tilt:-.5deg">
+      <span class="kind">App one · the thing being moved</span>
+      <h3>The Blot</h3>
+      <canvas class="view" id="blot" aria-label="A two-colour ink blot"></canvas>
+      <div class="own" id="own"></div>
+      <label class="allow"><input type="checkbox" id="allow" checked> Let others move me</label>
+      <p class="small">Its own sliders are its own hands. Drag one while a swing is going: the swing follows your hand. Untick the box and the Hand can push all it likes: nothing moves.</p>
+    </article>
+    <article class="clip" style="--tilt:.5deg;--tape:4deg">
+      <span class="kind">App two · the hand</span>
+      <h3>The Hand</h3>
+      <div id="hand"><p class="hand-empty">Plug them in. The Hand has never heard of the Blot: everything below arrives from the Blot itself, as a list of its controls.</p></div>
+      <div class="knobrow" style="margin-top:6px"><span>Swing speed</span><input type="range" id="rate" min="0" max="100" value="40" aria-label="Swing speed"><output id="rate-o"></output></div>
+      <p class="small"><b>Set</b> = the slider. <b>Swing</b> = an LFO around wherever the Blot’s owner left it. <b>Env</b> = one envelope, sent as a shape.</p>
+      <span class="kind" style="margin-top:6px">What the Blot hears and says</span>
+      <div class="wire" id="wire" aria-live="off">(quiet)</div>
+    </article>
+  </div>
+</section>
+
+<!-- ===== DEMO 2 ===== -->
+<section class="wrap" id="patch-demo" aria-labelledby="patch-h">
+  <div class="sect"><h2 id="patch-h"><span class="num">Demo 2 · Outputs</span>A pendulum plays the blot</h2>
+    <p>A third app joins the room. It swings, and publishes its swing as an output. Patch that output into the Blot’s knobs and nobody is turning anything.</p></div>
+  <div class="board two">
+    <article class="clip" style="--tilt:.4deg">
+      <span class="kind">App three · has an output</span>
+      <h3>The Pendulum</h3>
+      <canvas class="view pend" id="pend" aria-label="A pendulum"></canvas>
+      <p class="small">Output: <b>Swing</b>, 0 to 1, sent a few times a second when it moves.</p>
+    </article>
+    <article class="clip" style="--tilt:-.6deg;--tape:-5deg">
+      <span class="kind">The patch bay</span>
+      <h3>Plug outputs into knobs</h3>
+      <div class="patch" id="bay">
+        <input type="checkbox" id="p1"><label for="p1">Pendulum swing → Blot size</label>
+        <input type="checkbox" id="p2"><label for="p2">Pendulum swing → Blot misregister</label>
+        <input type="checkbox" id="p3"><label for="p3">Blot breath → Pendulum length</label>
+      </div>
+      <div class="knobrow" style="margin-top:8px"><span>Depth</span><input type="range" id="depth" min="0" max="100" value="60" aria-label="Patch depth"><output id="depth-o"></output></div>
+      <p class="small cable" id="bay-note">Plug them in up top first.</p>
+      <p class="small">This is all a mod matrix does: listen to someone’s output, send it to someone’s control as a swing. MEGA·CV does it with real cables of sound.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ===== DEMO 3 ===== -->
+<section class="wrap" id="why" aria-labelledby="why-h">
+  <div class="sect"><h2 id="why-h"><span class="num">Demo 3 · Why shapes travel whole</span>The bumpy road</h2>
+    <p>A pretend network, drawn on this page (nothing is sent). The internet delivers messages late and unevenly. Watch what that does to an envelope.</p></div>
+  <article class="clip" style="--tilt:0deg">
+    <canvas class="view sim" id="sim" aria-label="Two envelopes compared"></canvas>
+    <div class="legend-row"><span><i style="background:var(--muted)"></i>what was sent</span><span><i style="background:var(--pink)"></i>sent as 30 little sets</span><span><i style="background:var(--blue)"></i>sent as one ramp</span></div>
+    <div class="knobrow"><span>Road bumps</span><input type="range" id="jit" min="0" max="100" value="55" aria-label="Network jitter"><output id="jit-o"></output></div>
+    <p><button class="btn primary" id="fire" type="button">Send an envelope</button></p>
+    <p class="small">The pink one arrives in a stutter: each little set hits a different pothole. The blue one goes as a single message (“up in 80 ms, down in 600 ms”) and is played by the far app on its own clock. It comes out late, but it comes out perfect. That’s why Invisible Hands has ramps.</p>
+  </article>
+</section>
+
+<!-- ===== DEMO 4 ===== -->
+<section class="wrap" id="phone" aria-labelledby="phone-h">
+  <div class="sect"><h2 id="phone-h"><span class="num">Demo 4 · Somewhere else</span>Take the hand home</h2>
+    <p>The real trick: the hand doesn’t have to be on this page.</p></div>
+  <article class="clip" style="--tilt:.3deg">
+    <div class="qrbox">
+      <div class="qr" id="qr" aria-label="QR code for the console in this room"><svg viewBox="0 0 10 10"><rect width="10" height="10" fill="#fff"/><text x="5" y="5.6" font-size="1.3" text-anchor="middle" font-family="Courier Prime, monospace" fill="#18181B">plug in first</text></svg></div>
+      <div>
+        <h3>Point your phone here</h3>
+        <p>It opens the <b>console</b> in the same room. The Blot and the Pendulum show up on your phone with all their controls. Move one with your thumb and watch it move on this screen.</p>
+        <p class="linkline" id="phone-link"></p>
+        <p><button class="btn" id="copy-phone" type="button" disabled>Copy the link</button> <span class="small">or send it to someone in another city.</span></p>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- ===== BUILD ===== -->
+<section class="wrap" id="build" aria-labelledby="build-h">
+  <div class="sect"><h2 id="build-h"><span class="num">Put it in your app</span>Three ways in</h2>
+    <p>All of them are free. All of them work with every other app that has Invisible Hands.</p></div>
+  <div class="big-cta">
+    <a class="btn big primary" href="invisible-hands-kit.zip" download>Download the kit (.zip)</a>
+    <a class="btn big" href="docs/">Step-by-step docs</a>
+  </div>
+  <div class="board three">
+    <article class="clip track" style="--tilt:-.6deg">
+      <span class="kind">Easiest</span>
+      <h3>Let your Claude do it</h3>
+      <ol>
+        <li>Download <a href="INVISIBLE_HANDS.md" download>INVISIBLE_HANDS.md</a>.</li>
+        <li>Drop it in your project.</li>
+        <li>Say this to Claude:</li>
+      </ol>
+      <div class="codewrap"><p class="prompt" id="the-prompt">Read INVISIBLE_HANDS.md and add Invisible Hands to this app.</p><button class="copy" type="button" data-copy="the-prompt">Copy</button></div>
+      <p class="small">It works out which knobs to offer (it asks if it can’t tell), wires them, adds the panel, tests with the console, and hands you a link.</p>
+      <a class="btn" href="docs/#claude">The details →</a>
+    </article>
+    <article class="clip track" style="--tilt:.5deg;--tape:4deg">
+      <span class="kind">A web page, by hand</span>
+      <h3>One file, eight lines</h3>
+      <div class="codewrap"><pre class="code" id="snip">&lt;script src="https://samuelling.github.io/InvisibleHands/invisible-hands.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+const hands = InvisibleHands.create({
+  app: 'my-app', name: 'My App',
+  params: [{ id: 'speed', label: 'Speed',
+    get: () =&gt; speed, set: v =&gt; { speed = v; } }]
+});
+settings.append(hands.panel());
+&lt;/script&gt;</pre><button class="copy" type="button" data-copy="snip">Copy</button></div>
+      <a class="btn" href="docs/#web">Step by step →</a>
+    </article>
+    <article class="clip track" style="--tilt:-.3deg;--tape:-2deg">
+      <span class="kind">Everything else</span>
+      <h3>Python, Max, anything</h3>
+      <ol>
+        <li><b>Python</b>: one file, a command line, an LFO in one line.</li>
+        <li><b>Max, Pd, TouchDesigner, Live, SuperCollider</b>: an OSC bridge.</li>
+        <li><b>Go, Swift, Rust, C++…</b>: it’s JSON over a WebSocket. The guide has a whole conversation written out.</li>
+      </ol>
+      <p class="btnrow"><a class="btn" href="docs/#python">Python →</a> <a class="btn" href="docs/#osc">OSC →</a> <a class="btn" href="docs/#any">Any language →</a></p>
+    </article>
+  </div>
+</section>
+
+<!-- ===== KEYS ===== -->
+<section class="wrap" id="key" aria-labelledby="key-h">
+  <div class="sect"><h2 id="key-h"><span class="num">Before you ship</span>Get a key</h2>
+    <p>The relay is free to use and two people pay for it. A key keeps one runaway loop from using up everybody’s month.</p></div>
+  <div class="board two">
+    <article class="clip" style="--tilt:-.4deg">
+      <h3>How it works</h3>
+      <ol class="steps" style="margin-top:4px">
+        <li><b>Build without one</b>Run the little relay on your own computer (one command, in the kit). No key, no limits, no internet needed.</li>
+        <li><b>Ask once</b>Tell us your app’s name, its web address and what it’ll move. Through the finger guns or the BBS, whichever you like.</li>
+        <li><b>Get your key</b>A string like <code>ih_k2v9…</code>, tied to your app’s web address. Copied onto another site, it does nothing.</li>
+        <li><b>Paste it in</b><code>create({ key: 'ih_…' })</code>. Done.</li>
+      </ol>
+    </article>
+    <article class="clip" style="--tilt:.5deg;--tape:3deg">
+      <h3>Ask for one</h3>
+      <p>Either way, a person reads it and writes back, usually within a few days.</p>
+      <p style="display:flex;flex-wrap:wrap;gap:10px;margin:10px 0"><a class="btn big primary" href="https://megazine.org/contact/?about=hands-key">With finger guns →</a> <a class="btn big" href="https://samuelling.github.io/BBS/">On the BBS →</a></p>
+      <p class="small">On the BBS, post in <b>megaZINE Submissions</b> with “Invisible Hands key” as the title. For a program that isn’t a web page (Python, a command line), ask for a <b>native</b> key and keep it to yourself.</p>
+      <p class="small">Each key gets 2 million frames a month (a frame is one bundle of moves). That’s about 45 minutes a day of a patch swinging knobs 25 times a second. Slow swings cost far less. Need more? Ask.</p>
+      <p class="small" id="relay-open"></p>
+    </article>
+  </div>
+</section>
+
+<!-- ===== ALREADY WIRED ===== -->
+<section class="wrap" aria-labelledby="wired-h">
+  <div class="sect"><h2 id="wired-h"><span class="num">Already wired</span>Things with hands in them</h2></div>
+  <div class="wired">
+    <article class="clip" style="--tilt:-.5deg"><span class="kind">Matt · sound + video</span><h3>MEGA·CV</h3><p>A modular synth for the browser with a Hands module: patch any signal out to any app in the room, and bring their outputs back as signals.</p><a class="btn" href="https://crumplabsandbox.github.io/mega-cv/" target="_blank" rel="noopener">Open ↗</a></article>
+    <article class="clip" style="--tilt:.6deg;--tape:4deg"><span class="kind">Sam &amp; Matt · art</span><h3>Chamber</h3><p>Fifty small-town businesses with secrets. Open two side by side and they start to bleed into each other, through a room of their own.</p><a class="btn" href="https://samuelling.github.io/Chamber/" target="_blank" rel="noopener">Visit ↗</a></article>
+    <article class="clip" style="--tilt:-.2deg;--tape:-3deg"><span class="kind">Here</span><h3>The console</h3><p>Join any room and move whatever is in it. Sliders, swings, envelopes, and meters for every output.</p><a class="btn" href="console/">Open the console →</a></article>
+  </div>
+</section>
+
+<!-- ===== RULES ===== -->
+<section class="wrap" aria-labelledby="rules-h">
+  <div class="sect"><h2 id="rules-h"><span class="num">Manners</span>House rules &amp; small print</h2></div>
+  <div class="cols">
+    <div>
+      <h3>An app that can be moved</h3>
+      <ol>
+        <li>Shows when it’s linked.</li>
+        <li>Has a switch that stops remote control. Local hands win.</li>
+        <li>Clamps every number it gets, and ignores controls it doesn’t have.</li>
+        <li>Shows other apps’ names as plain text, never as code.</li>
+        <li>Never offers anything that deletes, buys, records, or flashes like a strobe.</li>
+      </ol>
+    </div>
+    <div>
+      <h3>The small print</h3>
+      <ul>
+        <li>Only numbers and short labels travel. No pictures, no sound, no personal data.</li>
+        <li>The relay keeps a guest list per room and a monthly count. It stores no values and keeps no logs of what moved.</li>
+        <li>A room code is the only way in. Share it like a house key.</li>
+        <li>16 apps a room. Sends are capped so nobody can drown a room.</li>
+        <li>The whole thing is open: <a href="SPEC.md">the protocol</a> is one page, and you can <a href="docs/#relay">run your own relay</a>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
 </main>
 
+<footer class="wrap">
+  <span>Invisible Hands · made by Sam &amp; Matt, with Claude · in <a href="https://megazine.org/">megaZINE</a> Issue 03</span>
+  <span><a href="docs/">Docs</a> · <a href="console/">Console</a> · <a href="https://github.com/samuelling/InvisibleHands">GitHub</a> · <a href="keys/" rel="nofollow">Editors</a></span>
+</footer>
+
 <script src="invisible-hands.js"></script>
-<script>
-'use strict';
-const $=id=>document.getElementById(id);
-const hands=InvisibleHands.create({app:'console',name:'Console'});
-$('link').appendChild(hands.panel());
-
-// a relay address typed here is remembered on this device only
-if(!hands.relay){
-  $('relayRow').hidden=false;
-  try{const r=localStorage.getItem('ih-relay');if(r){hands.relay=r;$('relay').value=hands.relay;}}catch(err){}
-  $('relay').addEventListener('change',e=>{hands.relay=e.target.value.trim();e.target.value=hands.relay;try{localStorage.setItem('ih-relay',hands.relay);}catch(err){}});
-}
-
-// ---- hand settings ----
-const H={rate:1,depth:0.35,att:200,dec:800};
-function settings(){
-  H.rate=0.05*Math.pow(100,$('rate').value/100);            // 0.05 to 5 Hz
-  H.depth=$('depth').value/100;
-  H.att=Math.round(5*Math.pow(1000,$('att').value/100));     // 5 ms to 5 s
-  H.dec=Math.round(20*Math.pow(500,$('dec').value/100));     // 20 ms to 10 s
-  $('rateOut').textContent=H.rate<1?H.rate.toFixed(2)+' Hz':H.rate.toFixed(1)+' Hz';
-  $('depthOut').textContent=Math.round(H.depth*100)+'%';
-  $('attOut').textContent=H.att<1000?H.att+' ms':(H.att/1000).toFixed(1)+' s';
-  $('decOut').textContent=H.dec<1000?H.dec+' ms':(H.dec/1000).toFixed(1)+' s';
-}
-for(const id of ['rate','depth','att','dec'])$(id).addEventListener('input',settings);
-settings();
-
-// ---- LFOs: one sine per control that has its LFO button on, sent as `mod` twenty times a second ----
-const lfos=new Map();   // "peer/param" -> {peer, p, t0}
-setInterval(()=>{
-  const now=performance.now()/1000;
-  for(const [key,l] of lfos){
-    if(!hands.peers.some(q=>q.id===l.peer)){lfos.delete(key);continue;}
-    hands.mod(l.peer,l.p,H.depth*Math.sin(2*Math.PI*H.rate*(now-l.t0)));
-  }
-},50);
-
-// ---- the room's apps and their controls ----
-const meters=new Map();   // "peer/out" -> the bar element
-function render(){
-  const box=$('peers');box.textContent='';meters.clear();
-  const list=hands.peers;
-  if(hands.status==='on'&&!list.length){const s=document.createElement('section');s.className='empty';s.textContent='Nobody else is in this room yet. Open an app with the invite link, or send the link to someone.';box.appendChild(s);return;}
-  for(const peer of list){
-    const sec=document.createElement('section');sec.className='peer';
-    const h=document.createElement('h3');h.textContent=peer.name;sec.appendChild(h);
-    const a=document.createElement('p');a.className='app';a.textContent=peer.app+' · '+peer.params.length+(peer.params.length===1?' control':' controls');sec.appendChild(a);
-    if(!peer.params.length){const n=document.createElement('p');n.className='small';n.textContent='This app has no controls to move.';sec.appendChild(n);}
-    for(const p of peer.params){
-      const row=document.createElement('div');row.className='row';
-      const name=document.createElement('span');name.className='name';name.textContent=p.label;name.title=p.id;
-      const s=document.createElement('input');s.type='range';s.min=0;s.max=1000;s.value=Math.round((p.value||0)*1000);s.setAttribute('aria-label',p.label+' on '+peer.name);
-      let last=0,timer=0;
-      const push=()=>{last=performance.now();hands.set(peer.id,p.id,s.value/1000);};
-      s.addEventListener('input',()=>{clearTimeout(timer);const wait=33-(performance.now()-last);if(wait<=0)push();else timer=setTimeout(push,wait);});
-      const key=peer.id+'/'+p.id;
-      const lfo=document.createElement('button');lfo.type='button';lfo.textContent='LFO';lfo.setAttribute('aria-pressed',String(lfos.has(key)));lfo.setAttribute('aria-label','LFO on '+p.label);
-      lfo.addEventListener('click',()=>{
-        if(lfos.has(key)){lfos.delete(key);hands.mod(peer.id,p.id,0);}else lfos.set(key,{peer:peer.id,p:p.id,t0:performance.now()/1000});
-        lfo.setAttribute('aria-pressed',String(lfos.has(key)));
-      });
-      const env=document.createElement('button');env.type='button';env.textContent='Env';env.setAttribute('aria-label','Envelope on '+p.label);
-      // the start time is set a little ahead on the relay's clock, so every copy of the app begins together
-      env.addEventListener('click',()=>hands.ramp(peer.id,p.id,[[H.att,1],[H.dec,0]],hands.serverNow()+80));
-      row.append(name,s,lfo,env);sec.appendChild(row);
-    }
-    if(peer.outs.length){
-      const o=document.createElement('div');o.className='outs';
-      for(const q of peer.outs){
-        const m=document.createElement('div');m.className='meter';m.textContent=q.label;
-        const i=document.createElement('i'),b=document.createElement('b');i.appendChild(b);m.appendChild(i);o.appendChild(m);
-        meters.set(peer.id+'/'+q.id,b);
-        if(peer.state[q.id]!==undefined)b.style.width=Math.round(peer.state[q.id]*100)+'%';
-      }
-      sec.appendChild(o);
-    }
-    box.appendChild(sec);
-  }
-}
-hands.on('peers',render);hands.on('status',render);
-hands.on('state',peer=>{for(const k in peer.state){const b=meters.get(peer.id+'/'+k);if(b)b.style.width=Math.round(peer.state[k]*100)+'%';}});
-render();
-window.HANDS=hands;
-</script>
+<script src="site/qrcode.js"></script>
+<script src="site/site.js"></script>
+<script src="site/demos.js"></script>
 </body>
 </html>

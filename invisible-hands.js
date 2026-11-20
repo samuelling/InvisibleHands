@@ -9,7 +9,8 @@
      });
      button.onclick = () => dialog.append(hands.panel());   // optional built-in panel: start, join, invite, switch off
 
-   A page opened with ?room=<code> joins that room by itself. See SPEC.md for the messages. */
+   A page opened with ?room=<code> joins that room by itself. See SPEC.md for the messages.
+   Outside the editors' own sites, pass create({ key: 'ih_…' }): ask for a key on the website. */
 (function (root) {
   'use strict';
   var VERSION = 1;
@@ -42,17 +43,46 @@
     var params = (opts.params || []).slice(), outs = (opts.outs || []).slice();
     var relayFromQuery = okRelay(query('relay'));
     var relay = okRelay(opts.relay) || relayFromQuery || okRelay(root.INVISIBLE_HANDS_RELAY) || okRelay(DEFAULT_RELAY);
+    // a key from the editors, for apps outside their own sites (tied to this app's website, so it can sit in the page)
+    var key = /^ih_[a-z0-9]{20}$/.test(opts.key || root.INVISIBLE_HANDS_KEY || '') ? (opts.key || root.INVISIBLE_HANDS_KEY) : '';
     var stateHz = opts.stateHz || 15;
     var ws = null, room = null, id = null, status = 'off', wanted = false, tries = 0, retryTimer = 0, pingTimer = 0, stateTimer = 0;
     var peers = new Map(), listeners = {}, allow = opts.allow !== false, offset = 0, rtt = null;
-    var ramps = new Map(), base = new Map(), sent = {}, sentAll = 0, pings = {}, pingN = 0, lastError = '';
+    var ramps = new Map(), base = new Map(), sent = {}, sendAll = true, pings = {}, pingN = 0, lastError = '';
+    var canBatch = false, outbox = [], flushing = false, last = new Map(), why = '';
 
     function emit(ev, a, b) { (listeners[ev] || []).slice().forEach(function (fn) { try { fn(a, b); } catch (err) { if (root.console) root.console.error(err); } }); }
     function on(ev, fn) { (listeners[ev] = listeners[ev] || []).push(fn); return function () { listeners[ev] = (listeners[ev] || []).filter(function (f) { return f !== fn; }); }; }
     function setStatus(s) { if (s !== status) { status = s; emit('status', s); } }
     function param(pid) { for (var i = 0; i < params.length; i++) if (params[i].id === pid) return params[i]; return null; }
     function read(p) { try { var v = +p.get(); return isFinite(v) ? clamp(v, 0, 1) : 0; } catch (err) { return 0; } }
-    function send(obj) { if (ws && ws.readyState === 1) { try { ws.send(JSON.stringify(obj)); return true; } catch (err) {} } return false; }
+    function raw(obj) { if (ws && ws.readyState === 1) { try { ws.send(JSON.stringify(obj)); return true; } catch (err) {} } return false; }
+    // Every frame counts against the relay's allowance, whatever its size. So moves made in the same moment
+    // (an LFO tick driving four controls, say) leave together as one batch frame, when the relay takes them.
+    function flush() {
+      flushing = false;
+      var q = outbox; outbox = [];
+      if (q.length === 1 || !canBatch) { q.forEach(raw); return; }
+      for (var i = 0; i < q.length; i += 32) raw(q.length - i === 1 ? q[i] : { t: 'batch', m: q.slice(i, i + 32) });
+    }
+    function send(obj) {
+      if (!ws || ws.readyState !== 1) return false;
+      if (obj.t === 'set' || obj.t === 'mod' || obj.t === 'ramp' || obj.t === 'state') {
+        outbox.push(obj);
+        if (!flushing) { flushing = true; Promise.resolve().then(flush); }
+        return true;
+      }
+      return raw(obj);
+    }
+    // the same value to the same control, again within a few seconds, is not worth a frame
+    function changed(to, p, t, v) {
+      var k = t + '|' + (to || '') + '|' + p, now = Date.now(), l = last.get(k);
+      if (l && l.v === v && now - l.at < 4000) return false;
+      last.set(k, { v: v, at: now });
+      if (last.size > 512) last.delete(last.keys().next().value);
+      return true;
+    }
+    var r4 = function (v) { return Math.round(v * 10000) / 10000; };
     function target(to) { return to && typeof to === 'object' ? to.id : to; }
 
     function describe(to) {
@@ -98,13 +128,15 @@
       var peer = m.from ? peers.get(m.from) : null, p;
       switch (m.t) {
         case 'welcome':
-          id = m.id; offset = (+m.now || Date.now()) - Date.now(); tries = 0; lastError = '';
+          id = m.id; offset = (+m.now || Date.now()) - Date.now(); tries = 0; lastError = ''; canBatch = !!m.batch; last.clear();
           peers.clear();
           (m.peers || []).forEach(function (q) { peers.set(q.id, { id: q.id, app: q.app, name: q.name, params: [], outs: [], state: {} }); });
-          setStatus('on'); describe(); ping(); emit('peers', api.peers);
+          setStatus('on'); describe(); emit('peers', api.peers);
+          // three pings to learn the relay's clock, then one every five minutes: clocks drift slowly
+          ping(); setTimeout(ping, 1500); setTimeout(ping, 4000);
           break;
         case 'join':
-          if (m.peer && m.peer.id) { peers.set(m.peer.id, { id: m.peer.id, app: m.peer.app, name: m.peer.name, params: [], outs: [], state: {} }); describe(m.peer.id); sentAll = 0; emit('peers', api.peers); }
+          if (m.peer && m.peer.id) { peers.set(m.peer.id, { id: m.peer.id, app: m.peer.app, name: m.peer.name, params: [], outs: [], state: {} }); describe(m.peer.id); sendAll = true; last.clear(); emit('peers', api.peers); }
           break;
         case 'leave':
           if (peers.delete(m.id)) emit('peers', api.peers);
@@ -130,18 +162,20 @@
           }
           break;
         case 'error':
+          if (m.why) why = String(m.why).slice(0, 160);
           emit('error', m.code);
           break;
       }
     }
-    function ping() { var n = ++pingN; pings[n] = Date.now(); send({ t: 'ping', n: n }); }
+    function ping() { if (status !== 'on') return; var n = ++pingN; pings[n] = Date.now(); raw({ t: 'ping', n: n }); }
 
     // ---- what goes out by itself: this app's own outputs, a few times a second, only when they change ----
     function publish() {
       if (status !== 'on' || !peers.size || !outs.length) return;
-      var now = Date.now(), all = now - sentAll > 2000, o = {}, n = 0;
-      outs.forEach(function (q) { var v = read(q); if (all || sent[q.id] === undefined || Math.abs(v - sent[q.id]) > 0.002) { o[q.id] = Math.round(v * 10000) / 10000; sent[q.id] = v; n++; } });
-      if (all) sentAll = now;
+      // everything when someone new arrives, otherwise only what moved
+      var all = sendAll, o = {}, n = 0;
+      outs.forEach(function (q) { var v = read(q); if (all || sent[q.id] === undefined || Math.abs(v - sent[q.id]) > 0.002) { o[q.id] = r4(v); sent[q.id] = v; n++; } });
+      sendAll = false;
       if (n) send({ t: 'state', outs: o });
     }
 
@@ -151,18 +185,26 @@
       if (!relay) { lastError = 'No relay address is set.'; setStatus('error'); return; }
       setStatus(tries ? 'retrying' : 'connecting');
       var sock;
-      try { sock = new WebSocket(relay + '/room/' + room + '?app=' + encodeURIComponent(app) + '&name=' + encodeURIComponent(name)); }
+      try { sock = new WebSocket(relay + '/room/' + room + '?app=' + encodeURIComponent(app) + '&name=' + encodeURIComponent(name) + (key ? '&key=' + key : '')); }
       catch (err) { lastError = 'The relay address is not usable.'; setStatus('error'); return; }
       ws = sock;
       sock.onmessage = onMessage;
-      sock.onclose = function () {
+      sock.onclose = function (ev) {
         if (ws !== sock) return;
-        ws = null; id = null;
+        ws = null; id = null; outbox = [];
         if (peers.size) { peers.clear(); emit('peers', api.peers); }
         if (!wanted) { setStatus('off'); return; }
-        tries++; lastError = 'Cannot reach the relay. Trying again.';
+        var code = ev && ev.code;
+        // the relay said no for a reason that retrying will not fix: stop, and say why
+        if (code === 4001 || code === 4003 || code === 4008 || code === 4029) {
+          wanted = false; clearInterval(pingTimer); clearInterval(stateTimer);
+          lastError = why || (code === 4029 ? 'The relay has used its allowance for this month.' : code === 4008 ? 'Too many messages: the relay closed the line.' : 'This app needs a key to use the relay.');
+          why = ''; setStatus('error'); return;
+        }
+        tries++; lastError = code === 4030 ? (why || 'The relay is busy. Trying again in a minute.') : 'Cannot reach the relay. Trying again.';
+        why = '';
         setStatus('retrying');
-        retryTimer = setTimeout(open, Math.min(15000, 500 * Math.pow(2, Math.min(tries, 5))));
+        retryTimer = setTimeout(open, code === 4030 ? 60000 : Math.min(15000, 500 * Math.pow(2, Math.min(tries, 5))));
       };
       sock.onerror = function () {};
     }
@@ -171,13 +213,13 @@
       if (!c) { lastError = 'Room codes are 4 to 48 letters, digits and hyphens.'; emit('status', status); return false; }
       leave(); room = c; wanted = true; tries = 0; lastError = '';
       open();
-      clearInterval(pingTimer); pingTimer = setInterval(function () { if (status === 'on') ping(); }, 10000);
+      clearInterval(pingTimer); pingTimer = setInterval(ping, 300000);
       clearInterval(stateTimer); stateTimer = setInterval(publish, Math.round(1000 / stateHz));
       return true;
     }
     function leave() {
       wanted = false; clearTimeout(retryTimer); clearInterval(pingTimer); clearInterval(stateTimer);
-      ramps.forEach(function (r) { clearTimeout(r.timer); }); ramps.clear(); base.clear(); sent = {};
+      ramps.forEach(function (r) { clearTimeout(r.timer); }); ramps.clear(); base.clear(); sent = {}; outbox = []; last.clear();
       var s = ws; ws = null; id = null; room = null;
       if (s) { try { s.close(1000, 'bye'); } catch (err) {} }
       if (peers.size) { peers.clear(); emit('peers', api.peers); }
@@ -264,10 +306,12 @@
       on: on, join: join, leave: leave, makeCode: makeCode, inviteUrl: inviteUrl, panel: panel,
       newRoom: function () { var c = makeCode(); join(c); return c; },
       describe: function () { describe(); },                        // call again if your controls change
+      recenter: function (pid) { stopRamp(pid); base.delete(pid); },   // call when the person moves a control by hand: modulation then swings around the new value
       serverNow: function () { return Date.now() + offset; },         // the relay's clock, for timed ramps
       // sending: `to` is a peer (or its id), 'app:<slug>' for every copy of an app, or nothing for everyone
-      set: function (to, p, v) { return send({ t: 'set', to: target(to) || undefined, p: p, v: clamp(+v, 0, 1) }); },
-      mod: function (to, p, v) { return send({ t: 'mod', to: target(to) || undefined, p: p, v: clamp(+v, -1, 1) }); },
+      set: function (to, p, v) { v = r4(clamp(+v || 0, 0, 1)); to = target(to) || undefined; return changed(to, p, 's', v) ? send({ t: 'set', to: to, p: p, v: v }) : true; },
+      mod: function (to, p, v) { v = r4(clamp(+v || 0, -1, 1)); to = target(to) || undefined; return changed(to, p, 'm', v) ? send({ t: 'mod', to: to, p: p, v: v }) : true; },
+      sync: function () { ping(); },                                   // refresh the clock before a timed ramp, if it matters to the millisecond
       ramp: function (to, p, pts, at) { var m = { t: 'ramp', to: target(to) || undefined, p: p, pts: pts }; if (at) m.at = at; return send(m); }
     };
     var auto = opts.autoJoin === false ? null : cleanCode(query('room'));
