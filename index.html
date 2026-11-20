@@ -37,6 +37,7 @@ canvas.view.sim { aspect-ratio: 5 / 2; }
 .legend-row i { display: inline-block; width: 18px; height: 4px; vertical-align: middle; margin-right: 6px; }
 .big-cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin: 4px 0 26px; }
 .prompt { font: 400 .9rem/1.45 var(--type); background: color-mix(in srgb, var(--teal) 9%, var(--paper)); border: 1.5px dashed var(--teal); padding: 10px 12px; }
+.wired .clip > .btn { align-self: flex-start; margin-top: auto; }
 .wired { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 24px; }
 </style>
 </head>
@@ -270,9 +271,12 @@ settings.append(hands.panel());
 
 <!-- ===== ALREADY WIRED ===== -->
 <section class="wrap" aria-labelledby="wired-h">
-  <div class="sect"><h2 id="wired-h"><span class="num">Already wired</span>Things with hands in them</h2></div>
+  <div class="sect"><h2 id="wired-h"><span class="num">Already wired</span>Things with hands in them</h2><p>Open any two in the same room and patch them in the <a href="console/">console</a>: a fly’s motion cells swinging the grove’s stripes, the flock’s spread bending FlyHarp’s notes. Add MEGA·CV when you want more.</p></div>
   <div class="wired">
     <article class="clip" style="--tilt:-.5deg"><span class="kind">Matt · the best modulator</span><h3>MEGA·CV</h3><p>A modular synth for sound and video in the browser, and the best thing to point at Invisible Hands. Its Hands module patches any signal (oscillators, envelopes, sequences, audio) out to any knob in the room, and brings other apps’ outputs back in as signals.</p><a class="btn" href="https://crumplabsandbox.github.io/mega-cv/" target="_blank" rel="noopener">Open ↗</a></article>
+    <article class="clip" style="--tilt:.4deg;--tape:-2deg"><span class="kind">Sam · sound</span><h3>FlyHarp</h3><p>A synthesizer played by a model of the fruit fly’s eye and brain. Its sliders, notes and motion are knobs in the room, and every cell type it listens to is an output, so a fly’s neurons can drive somebody else’s app.</p><a class="btn" href="https://samuelling.github.io/FlyHarp/" target="_blank" rel="noopener">Play ↗</a></article>
+    <article class="clip" style="--tilt:-.4deg;--tape:3deg"><span class="kind">Sam &amp; Emma · toy</span><h3>Gabor Grove</h3><p>A grove of tiny striped wave patches. Rotation, spatial frequency, point spread, scene and presets can all be turned from outside; its angle, contrast and stripe frequency come back out as signals.</p><a class="btn" href="https://samuelling.github.io/GaborGrove/" target="_blank" rel="noopener">Open ↗</a></article>
+    <article class="clip" style="--tilt:.5deg;--tape:-4deg"><span class="kind">Sam · toy</span><h3>Splatterhaus</h3><p>Flocks of birds over a meadow, dunes and sea. Its flocks publish their height, spread, speed, flapping and whether the falcon is hunting, ready to patch into anything else in the room.</p><a class="btn" href="https://samuelling.github.io/Splatterhouse/" target="_blank" rel="noopener">Open ↗</a></article>
     <article class="clip" style="--tilt:.6deg;--tape:4deg"><span class="kind">Sam &amp; Matt · art</span><h3>Chamber</h3><p>Fifty small-town businesses with secrets. Open two side by side and they start to bleed into each other, through a room of their own.</p><a class="btn" href="https://samuelling.github.io/Chamber/" target="_blank" rel="noopener">Visit ↗</a></article>
     <article class="clip" style="--tilt:-.2deg;--tape:-3deg"><span class="kind">Here</span><h3>The console</h3><p>Join any room and move whatever is in it: sliders, swings, envelopes, meters for every output, and a patch matrix to wire one app’s output straight into another app’s knob.</p><a class="btn" href="console/">Open the console →</a></article>
   </div>
