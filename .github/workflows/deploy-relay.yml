@@ -1,0 +1,95 @@
+name: Deploy relay
+
+# Puts relay/ on Cloudflare as wss://invisible-hands.samuelling.workers.dev. Runs when the relay changes, or by hand.
+# It needs these repository secrets (Settings -> Secrets and variables -> Actions):
+#   CLOUDFLARE_API_TOKEN   a Cloudflare API token made from the "Edit Cloudflare Workers" template
+#   ADMIN_TOKEN            a long passphrase you make up; /keys/ and /dashboard/ ask for it
+#   CLOUDFLARE_ACCOUNT_ID  optional: only if the token can see more than one account
+# Until the first two exist, a run does nothing and says so. Nothing secret is printed: this repo's logs are public.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "relay/**"
+      - ".github/workflows/deploy-relay.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: relay
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+      RELAY: wss://invisible-hands.samuelling.workers.dev
+    steps:
+      - name: Are the secrets here?
+        id: ready
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$ADMIN_TOKEN" ]; then
+            echo "::notice::Not deployed: add the CLOUDFLARE_API_TOKEN and ADMIN_TOKEN secrets, then run this again."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.ready.outputs.go == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.ready.outputs.go == 'true'
+        with:
+          node-version: 22
+      - name: Test the relay, then the Worker under wrangler dev
+        if: steps.ready.outputs.go == 'true'
+        working-directory: relay
+        run: |
+          set -euo pipefail
+          npm ci
+          npm test
+          env -u CLOUDFLARE_API_TOKEN -u ADMIN_TOKEN node test-worker.mjs
+      - name: Find the account and the keys' storage (made the first time)
+        if: steps.ready.outputs.go == 'true'
+        run: |
+          set -euo pipefail
+          api() { curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "$@"; }
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            CLOUDFLARE_ACCOUNT_ID=$(api "https://api.cloudflare.com/client/v4/accounts?per_page=50" | jq -r '.result[0].id // empty')
+          fi
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::The token cannot see a Cloudflare account. Add the CLOUDFLARE_ACCOUNT_ID secret."; exit 1; }
+          echo "::add-mask::$CLOUDFLARE_ACCOUNT_ID"
+          echo "CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID" >> "$GITHUB_ENV"
+          base="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID"
+          kv=$(api "$base/storage/kv/namespaces?per_page=100" | jq -r '.result[] | select(.title == "invisible-hands-keys") | .id' | head -n 1)
+          if [ -z "$kv" ]; then
+            kv=$(api -X POST "$base/storage/kv/namespaces" --data '{"title":"invisible-hands-keys"}' | jq -r '.result.id')
+            echo "Made the storage."
+          fi
+          [ -n "$kv" ] && [ "$kv" != "null" ] || { echo "::error::Could not find or make the KV namespace."; exit 1; }
+          sed -i "s/^id = .*/id = \"$kv\"/" relay/wrangler.toml
+      - name: Deploy
+        if: steps.ready.outputs.go == 'true'
+        working-directory: relay
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 deploy
+          printf '%s' "$ADMIN_TOKEN" | npx --yes wrangler@4 secret put ADMIN_TOKEN
+      - name: Check the live relay
+        if: steps.ready.outputs.go == 'true'
+        working-directory: relay
+        run: |
+          set -euo pipefail
+          status="${RELAY/wss:/https:}/status"
+          for i in $(seq 1 20); do
+            if curl -fsS "$status" | jq -e '.open == true' > /dev/null 2>&1; then ok=1; break; fi
+            sleep 6
+          done
+          [ "${ok:-}" = 1 ] || { echo "::error::$status did not answer open:true."; exit 1; }
+          node test.mjs "$RELAY"
+          echo "Relay live: $RELAY · dashboard: https://samuelling.github.io/InvisibleHands/dashboard/" >> "$GITHUB_STEP_SUMMARY"

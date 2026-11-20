@@ -72,6 +72,13 @@ Drag a slider in the console and the dot in the other page changes.
 
 ## Put the relay on Cloudflare
 
+The `Deploy relay` workflow (`.github/workflows/deploy-relay.yml`) does it. It runs on every push to `main` that touches `relay/`, or by hand from the Actions tab. It runs both relay test suites first, deploys only if they pass, then checks that `/status` answers `open: true` and runs the tests against the live relay. It needs two repository secrets (Settings → Secrets and variables → Actions):
+
+- `CLOUDFLARE_API_TOKEN`: a token from Cloudflare → My Profile → API Tokens → Create Token → "Edit Cloudflare Workers".
+- `ADMIN_TOKEN`: a long passphrase you make up; `/keys/` and `/dashboard/` ask for it.
+
+Until both exist, a run does nothing and says so. By hand instead:
+
 ```
 cd relay
 npx wrangler login
