@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Invisible Hands</title>
+<title>Invisible Hands · the control center</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="../brand/ih-mark.svg"><link rel="alternate icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23ECEDE9%22/%3E%3Ctext x=%2217%22 y=%2226%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%23F2369B%22%3EH%3C/text%3E%3Ctext x=%2215%22 y=%2224%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%2318181B%22%3EH%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +17,7 @@ main { max-width: 900px; margin: 0 auto; padding: 0 16px 60px; }
 .cmast h1 { font: 900 clamp(3rem, 11vw, 5rem)/.85 var(--display); margin: 12px 0 8px; text-shadow: 3px 3px 0 var(--flame); text-transform: uppercase; }
 .cmast h1 span { color: var(--teal); }
 .lede { font-size: 1rem; max-width: 56ch; color: var(--muted); }
+.cc-sub { font: 700 .82rem/1 var(--type); letter-spacing: .16em; text-transform: uppercase; color: var(--flame); margin: 0 0 8px; }
 h2 { font: 700 .76rem/1 var(--type); letter-spacing: .14em; text-transform: uppercase; color: var(--teal); margin: 0 0 10px; }
 section { background: var(--sheet); border: 1px solid var(--rule); padding: 18px 16px 16px; margin-top: 22px; position: relative; }
 section::before { content: ""; position: absolute; top: -9px; left: 50%; width: 70px; height: 17px; transform: translateX(-50%) rotate(-3deg); background: color-mix(in srgb, var(--teal) 22%, transparent); border: 1px solid color-mix(in srgb, var(--teal) 30%, transparent); }
@@ -76,20 +77,11 @@ button[aria-pressed="true"] { background: var(--flame); border-color: var(--flam
 <body>
 <main>
   <header class="cmast">
-    <div class="kicker"><a href="../"><svg class="ih-icon" style="width:22px;height:22px;margin:-6px 6px -6px 0;vertical-align:middle;color:var(--toner)" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="ih-flame" cx="17.5" cy="17.5" r="10.6" fill="var(--ih-flame)"/><circle cx="16" cy="16" r="10.6" fill="var(--ih-teal)"/><g class="ih-pointer" transform="rotate(38 16 16)"><path d="M16 16V8.6" stroke="var(--ih-cut)" stroke-width="3" stroke-linecap="round"/></g><path d="M11.14 2.66A14.2 14.2 0 0 1 21.32 2.83M27.49 7.65A14.2 14.2 0 0 1 30.12 17.48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="0.1 3.6"/></svg>Invisible Hands</a><span>The console</span><span class="r"><a href="../docs/">Docs</a> · <a href="https://megazine.org/">megaZINE</a></span></div>
+    <div class="kicker"><a href="../"><svg class="ih-icon" style="width:22px;height:22px;margin:-6px 6px -6px 0;vertical-align:middle;color:var(--toner)" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="ih-flame" cx="17.5" cy="17.5" r="10.6" fill="var(--ih-flame)"/><circle cx="16" cy="16" r="10.6" fill="var(--ih-teal)"/><g class="ih-pointer" transform="rotate(38 16 16)"><path d="M16 16V8.6" stroke="var(--ih-cut)" stroke-width="3" stroke-linecap="round"/></g><path d="M11.14 2.66A14.2 14.2 0 0 1 21.32 2.83M27.49 7.65A14.2 14.2 0 0 1 30.12 17.48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="0.1 3.6"/></svg>Invisible Hands</a><span>The control center</span><span class="r"><a href="../docs/">Docs</a> · <a href="https://megazine.org/">megaZINE</a></span></div>
     <h1>CON<span>sole</span></h1>
+    <p class="cc-sub">The control center</p>
     <p class="lede">Move another app's controls from anywhere. Join the same room as an app that has Invisible Hands in it, and its controls appear below: drag one, set an LFO swinging it, fire an envelope at it, or patch one app’s output into another app’s knob.</p>
   </header>
-
-  <section class="mcv" aria-labelledby="hMcv">
-    <div>
-      <h2 id="hMcv">For more expression</h2>
-      <p class="mcv-h">Pop in MEGA·CV</p>
-      <p class="small" style="margin-top:4px">The console moves knobs by hand, with simple swings and a patch bay. MEGA·CV is a whole modular synth in a tab: oscillators, envelopes, sequencers, sound and video, and any of them can swing any knob in this room. It’s the best modulator for Invisible Hands.</p>
-      <ol class="small mcv-steps"><li>Join or start a room here.</li><li>Press <b>Pop in MEGA·CV</b>. It opens in this room.</li><li>In MEGA·CV: <b>+ Module → Invisible Hands</b>. It links by itself, and every knob here shows up in its pickers.</li></ol>
-    </div>
-    <div class="mcv-go"><a class="btn big primary" id="mcvGo" href="https://crumplabsandbox.github.io/mega-cv/" target="_blank" rel="noopener">Pop in MEGA·CV ↗</a><span class="small" id="mcvState"></span></div>
-  </section>
 
   <div class="grid">
     <section aria-labelledby="hLink">
@@ -109,6 +101,16 @@ button[aria-pressed="true"] { background: var(--flame); border-color: var(--flam
       <p class="small">An LFO swings a control around wherever its owner left it. An envelope rises to the top and falls back, and is played on the far machine so the network cannot roughen it.</p>
     </section>
   </div>
+
+  <section class="mcv" aria-labelledby="hMcv">
+    <div>
+      <h2 id="hMcv">For more expression</h2>
+      <p class="mcv-h">Pop in MEGA·CV</p>
+      <p class="small" style="margin-top:4px">The console moves knobs by hand, with simple swings and a patch bay. MEGA·CV is a whole modular synth in a tab: oscillators, envelopes, sequencers, sound and video, and any of them can swing any knob in this room. It’s the best modulator for Invisible Hands.</p>
+      <ol class="small mcv-steps"><li>Join or start a room here.</li><li>Press <b>Pop in MEGA·CV</b>. It opens in this room.</li><li>In MEGA·CV: <b>+ Module → Invisible Hands</b>. It links by itself, and every knob here shows up in its pickers.</li></ol>
+    </div>
+    <div class="mcv-go"><a class="btn big primary" id="mcvGo" href="https://crumplabsandbox.github.io/mega-cv/" target="_blank" rel="noopener">Pop in MEGA·CV ↗</a><span class="small" id="mcvState"></span></div>
+  </section>
 
   <section aria-labelledby="hPatch" id="patch-sec">
     <h2 id="hPatch">Patch matrix</h2>
