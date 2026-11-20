@@ -23,7 +23,7 @@ export const LIMITS = {
 
 // Close codes the relay uses so clients know not to keep retrying. 4000s are free for applications.
 export const CLOSE = {
-  key: 4001,      // this app needs a key, or the key is unknown
+  key: 4001,      // the key given is not one of ours (keys are optional)
   denied: 4003,   // the key is revoked, or not for this website
   flood: 4008,    // far too many messages, for too long
   quota: 4029,    // the relay's monthly allowance (or this key's) is used up; try again next month
@@ -173,9 +173,9 @@ export function handle(raw, from, roster, bucket, now) {
 }
 
 // ---- who may connect ----
-// House origins (the editors' own sites) need no key. Everyone else connects with ?key=, issued by the editors.
-// A key is tied to the websites it may be used from, so a key copied out of a page works nowhere else.
-// A key marked native may also be used with no Origin at all (Python, Go, a command line); keep those secret.
+// Anyone, with no key. Keys are optional: the editors can issue one to give an app its own monthly ceiling, or
+// (editor keys) to keep working after the relay's monthly ceiling is reached. A key is tied to the websites it may
+// be used from, so a key copied out of a page works nowhere else; a native key also works with no website.
 export function parseHouse(list) {
   return String(list || '').split(/[\s,]+/).filter(Boolean).map(s => s.replace(/\/+$/, '').toLowerCase());
 }
@@ -186,14 +186,12 @@ export function originMatches(origin, patterns) {
 }
 export const KEY = /^ih_[a-z0-9]{20}$/;
 // record: the key's entry, or null if there is no such key. Returns {ok, code, why, who, editor, limit}.
-export function decide(origin, key, record, house) {
-  if (!key) {
-    if (originMatches(origin, house)) return { ok: true, who: '@' + String(origin).replace(/^https?:\/\//, '').toLowerCase(), editor: false, limit: 0 };
-    return { ok: false, code: CLOSE.key, why: 'This app needs a key. Ask for one at samuelling.github.io/InvisibleHands/#key' };
-  }
-  if (!KEY.test(key) || !record) return { ok: false, code: CLOSE.key, why: 'That key is not one of ours.' };
-  if (record.status !== 'ok') return { ok: false, code: CLOSE.denied, why: 'That key has been switched off.' };
+// who is what the month's count is kept under: the key, or the website (or "@program" for none).
+export function decide(origin, key, record) {
   const fromSite = origin && origin !== 'null';
+  if (!key) return { ok: true, who: fromSite ? '@' + String(origin).replace(/^https?:\/\//, '').toLowerCase().slice(0, 80) : '@program', editor: false, limit: 0 };
+  if (!KEY.test(key) || !record) return { ok: false, code: CLOSE.key, why: 'That key is not one of ours. Leave it out: no key is needed.' };
+  if (record.status !== 'ok') return { ok: false, code: CLOSE.denied, why: 'That key has been switched off.' };
   if (fromSite ? !originMatches(origin, record.origins || []) : !record.native) {
     return { ok: false, code: CLOSE.denied, why: fromSite ? 'That key is for a different website.' : 'That key only works from its website.' };
   }

@@ -4,7 +4,7 @@
 
 import { spawn } from 'node:child_process';
 import { WebSocket } from 'ws';
-import { LIMITS, CLOSE, sanitize, route, decide, parseHouse } from './core.js';
+import { LIMITS, CLOSE, sanitize, route, decide } from './core.js';
 
 let base = process.argv[2], child = null;
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -51,15 +51,14 @@ try {
 
   ok(sanitize({ t: 'batch', m: [{ t: 'set', p: 'a', v: 2 }, { t: 'mod', p: 'b', v: 0.1 }] }).m[0].v === 1, 'a batch is checked message by message');
   ok(sanitize({ t: 'batch', m: [{ t: 'ping', n: 1 }] }) === null && sanitize({ t: 'batch', m: new Array(LIMITS.batch + 1).fill({ t: 'set', p: 'a', v: 0 }) }) === null, 'a batch holds only moves and outputs, and not too many');
-  const house = parseHouse('https://samuelling.github.io http://localhost:*');
   const rec = { status: 'ok', origins: ['https://friend.example'], native: false, monthly: 5 };
-  ok(decide('https://samuelling.github.io', '', null, house).ok && decide('http://localhost:5173', '', null, house).ok, 'house sites need no key');
-  ok(decide('https://stranger.example', '', null, house).code === CLOSE.key && decide(null, '', null, house).code === CLOSE.key, 'everyone else needs a key');
-  ok(decide('https://friend.example', 'ih_aaaaaaaaaaaaaaaaaaaa', rec, house).ok, 'a key works from its own website');
-  ok(decide('https://copycat.example', 'ih_aaaaaaaaaaaaaaaaaaaa', rec, house).code === CLOSE.denied, 'a copied key does not work from another website');
-  ok(decide(null, 'ih_aaaaaaaaaaaaaaaaaaaa', rec, house).code === CLOSE.denied && decide(null, 'ih_aaaaaaaaaaaaaaaaaaaa', Object.assign({}, rec, { native: true }), house).ok, 'only native keys work with no website');
-  ok(decide('https://friend.example', 'ih_aaaaaaaaaaaaaaaaaaaa', Object.assign({}, rec, { status: 'off' }), house).code === CLOSE.denied, 'a switched-off key is refused');
-  ok(decide('https://friend.example', 'ih_bbbbbbbbbbbbbbbbbbbb', null, house).code === CLOSE.key, 'an unknown key is refused');
+  ok(decide('https://stranger.example', '', null).ok && decide(null, '', null).ok, 'no key is needed, from a website or a program');
+  ok(decide('https://Stranger.example', '', null).who === '@stranger.example' && decide(null, '', null).who === '@program', 'keyless use is counted by website');
+  ok(decide('https://friend.example', 'ih_aaaaaaaaaaaaaaaaaaaa', rec).ok, 'a key works from its own website');
+  ok(decide('https://copycat.example', 'ih_aaaaaaaaaaaaaaaaaaaa', rec).code === CLOSE.denied, 'a copied key does not work from another website');
+  ok(decide(null, 'ih_aaaaaaaaaaaaaaaaaaaa', rec).code === CLOSE.denied && decide(null, 'ih_aaaaaaaaaaaaaaaaaaaa', Object.assign({}, rec, { native: true })).ok, 'only native keys work with no website');
+  ok(decide('https://friend.example', 'ih_aaaaaaaaaaaaaaaaaaaa', Object.assign({}, rec, { status: 'off' })).code === CLOSE.denied, 'a switched-off key is refused');
+  ok(decide('https://friend.example', 'ih_bbbbbbbbbbbbbbbbbbbb', null).code === CLOSE.key, 'an unknown key is refused');
 
   // ---- a room ----
   const a = await peer('console', 'Console'), b = await peer('gaborgrove', 'Gabor Grove');

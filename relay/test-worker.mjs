@@ -1,4 +1,4 @@
-// Tests for the Cloudflare side: keys, the gate, the meter and the monthly ceilings. Runs the real worker
+// Tests for the Cloudflare side: the gate, optional keys, the meter and the monthly ceilings. Runs the real worker
 // locally under `wrangler dev`, with tiny ceilings so they are reached in seconds.
 //   node test-worker.mjs            (needs `npx wrangler` to work; nothing touches your Cloudflare account)
 
@@ -40,11 +40,14 @@ try {
   const HOUSE = 'http://localhost:5173';
 
   const h = await open('room-one', { origin: HOUSE });
-  ok(h.welcome && h.closed === null, 'a house site connects with no key');
+  ok(h.welcome && h.closed === null, 'a site connects with no key');
   const anon = await open('room-one');
-  ok(anon.closed === CLOSE.key && anon.got.some(m => m.t === 'error' && /key/i.test(m.why)), 'no website and no key: refused, and told why (' + anon.closed + ')');
+  ok(anon.welcome && anon.closed === null, 'a program connects with no key');
   const stranger = await open('room-one', { origin: 'https://stranger.example' });
-  ok(stranger.closed === CLOSE.key, 'another website with no key is refused');
+  ok(stranger.welcome && stranger.closed === null, 'any website connects with no key');
+  const bogus = await open('room-one', { origin: 'https://stranger.example', key: 'ih_zzzzzzzzzzzzzzzzzzzz' });
+  ok(bogus.closed === CLOSE.key && bogus.got.some(m => m.t === 'error' && m.why), 'a made-up key is refused, and told why');
+  anon.ws.close(); stranger.ws.close();
 
   ok((await adminCall('/keys', null, 'wrong')).status === 401, 'the keys page needs the passphrase');
   const made = await (await adminCall('/keys', { owner: 'Friend', app: 'Their App', origins: 'https://friend.example/some/page', note: 'asked on the BBS' })).json();
@@ -75,7 +78,7 @@ try {
 
   const ed = await (await adminCall('/keys', { owner: 'Sam', native: true, editor: true })).json();
   const list = await (await adminCall('/keys')).json();
-  ok(list.keys.length === 3 && list.usage.now.frames > 0, 'the keys page lists keys and this month\'s count (' + list.usage.now.frames + ' frames)');
+  ok(list.keys.length === 3 && list.usage.now.frames > 0 && list.usage.now.who['@program'] === undefined, 'the keys page lists keys and this month\'s count (' + list.usage.now.frames + ' frames)');
 
   // the monthly ceiling for everyone: 600 frames
   const b = await open('room-three', { origin: HOUSE, app: 'busy' });

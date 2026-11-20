@@ -10,7 +10,7 @@
      button.onclick = () => dialog.append(hands.panel());   // optional built-in panel: start, join, invite, switch off
 
    A page opened with ?room=<code> joins that room by itself. See SPEC.md for the messages.
-   Outside the editors' own sites, pass create({ key: 'ih_…' }): ask for a key on the website. */
+   No key is needed. */
 (function (root) {
   'use strict';
   var VERSION = 1;
@@ -37,13 +37,58 @@
   }
   function okRelay(u) { return typeof u === 'string' && /^(wss:\/\/[^\s]+|ws:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/[^\s]*)?)$/.test(u) ? u.replace(/\/+$/, '') : ''; }
 
+  // ---- the mark: a knob turned by a hand you can't see (teal knob, flame-orange misregistration, dotted fingertips).
+  // Colours can be overridden with CSS variables --ih-teal, --ih-flame, --ih-cut; the fingertips use currentColor.
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var FINGERS = 'M11.14 2.66A14.2 14.2 0 0 1 21.32 2.83M27.49 7.65A14.2 14.2 0 0 1 30.12 17.48';
+  function svgEl(tag, attrs) { var e = root.document.createElementNS(SVGNS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+  function icon(opts) {
+    opts = opts || {};
+    var mini = !!opts.mini, r = mini ? 12 : 10.6, size = opts.size || (mini ? 16 : 24);
+    var s = svgEl('svg', { viewBox: '0 0 32 32', width: size, height: size, 'class': 'ih-icon' + (mini ? ' ih-mini' : ''), role: 'img', 'aria-label': opts.title || 'Invisible Hands', focusable: 'false' });
+    var t = svgEl('title', {}); t.textContent = opts.title || 'Invisible Hands'; s.appendChild(t);
+    s.appendChild(svgEl('circle', { 'class': 'ih-flame', cx: 17.5, cy: 17.5, r: r, fill: 'var(--ih-flame, #FF5A1F)' }));
+    s.appendChild(svgEl('circle', { cx: 16, cy: 16, r: r, fill: 'var(--ih-teal, #00838A)' }));
+    var g = svgEl('g', { 'class': 'ih-pointer', transform: 'rotate(' + (opts.angle === undefined ? 38 : opts.angle) + ' 16 16)' });
+    g.appendChild(svgEl('path', { d: 'M16 16V' + (mini ? 7.4 : 8.6), stroke: 'var(--ih-cut, #F2EFE6)', 'stroke-width': mini ? 3.6 : 3, 'stroke-linecap': 'round' }));
+    s.appendChild(g);
+    if (!mini) s.appendChild(svgEl('path', { d: FINGERS, fill: 'none', stroke: 'currentColor', 'stroke-width': 2.2, 'stroke-linecap': 'round', 'stroke-dasharray': '0.1 3.6' }));
+    return s;
+  }
+  var PANEL_STYLE = '.ih{font:inherit;color:inherit;display:flex;flex-direction:column;gap:12px;max-width:440px}' +
+          '.ih-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}' +
+          '.ih button,.ih input[type=text]{font:inherit;color:inherit;background:transparent;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 40%,transparent);border-radius:999px;padding:7px 14px;min-height:38px;cursor:pointer}' +
+          '.ih input[type=text]{flex:1;min-width:130px;border-radius:10px;cursor:text}' +
+          '.ih button:disabled{opacity:.45;cursor:default}' +
+          '.ih-dot{flex:none;width:10px;height:10px;border-radius:50%;background:currentColor;opacity:.3}.ih-dot.on{opacity:1;background:#5fe0c0}.ih-dot.wait{opacity:.8;background:#e8b04a}' +
+          '.ih-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:1.05em;letter-spacing:.03em;user-select:all;-webkit-user-select:all;word-break:break-all}' +
+          '.ih-peers{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}.ih-peers li{padding:0;margin:0}.ih-peers li::before{content:none}' +
+          '.ih-note{margin:0;opacity:.72;font-size:.9em;line-height:1.4}.ih label{display:flex;gap:8px;align-items:center;cursor:pointer}';
+  var STYLE = '.ih-icon{display:inline-block;vertical-align:middle;flex:none;overflow:visible}' +
+    '.ih-icon .ih-flame,.ih-icon .ih-pointer{transition:transform .25s cubic-bezier(.3,1.6,.5,1)}' +
+    '.ih-tag{width:1.05em;height:1.05em;margin:0 .3em;opacity:.3;filter:grayscale(1);transition:opacity .3s,filter .3s;cursor:help}' +
+    '.ih-tag.ih-linked{opacity:.7;filter:none}.ih-tag.ih-live{opacity:1}' +
+    '.ih-tag.ih-hit .ih-flame{transform:translate(2.5px,-1.5px)}' +
+    '.ih-badge{position:relative;display:inline-flex}' +
+    '.ih-badge>button{font:inherit;color:inherit;background:transparent;border:1px solid color-mix(in srgb,currentColor 35%,transparent);border-radius:999px;padding:3px 10px 3px 4px;display:inline-flex;gap:6px;align-items:center;cursor:pointer;min-height:32px}' +
+    '.ih-badge>button .ih-icon{width:24px;height:24px}.ih-badge .ih-n{font-variant-numeric:tabular-nums;opacity:.75}' +
+    '.ih-badge.ih-hit .ih-flame{transform:translate(2.5px,-1.5px)}' +
+    '.ih-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:2147483000;background:Canvas;color:CanvasText;border:1px solid color-mix(in srgb,CanvasText 30%,transparent);border-radius:14px;padding:14px;box-shadow:0 10px 30px rgb(0 0 0/.25);width:min(340px,90vw)}' +
+    '.ih-head{display:flex;gap:8px;align-items:center;font-weight:700;letter-spacing:.02em}' +
+    '@media (prefers-reduced-motion:reduce){.ih-icon .ih-flame,.ih-icon .ih-pointer{transition:none}}';
+  function style() {
+    var doc = root.document;
+    if (!doc || doc.getElementById('ih-style')) return;
+    var st = doc.createElement('style'); st.id = 'ih-style'; st.textContent = STYLE + PANEL_STYLE; doc.head.appendChild(st);
+  }
+
   function create(opts) {
     opts = opts || {};
     var app = String(opts.app || 'app'), name = String(opts.name || app);
     var params = (opts.params || []).slice(), outs = (opts.outs || []).slice();
     var relayFromQuery = okRelay(query('relay'));
     var relay = okRelay(opts.relay) || relayFromQuery || okRelay(root.INVISIBLE_HANDS_RELAY) || okRelay(DEFAULT_RELAY);
-    // a key from the editors, for apps outside their own sites (tied to this app's website, so it can sit in the page)
+    // optional: a key from the editors, for an app given an allowance of its own
     var key = /^ih_[a-z0-9]{20}$/.test(opts.key || root.INVISIBLE_HANDS_KEY || '') ? (opts.key || root.INVISIBLE_HANDS_KEY) : '';
     var stateHz = opts.stateHz || 15;
     var ws = null, room = null, id = null, status = 'off', wanted = false, tries = 0, retryTimer = 0, pingTimer = 0, stateTimer = 0;
@@ -198,7 +243,7 @@
         // the relay said no for a reason that retrying will not fix: stop, and say why
         if (code === 4001 || code === 4003 || code === 4008 || code === 4029) {
           wanted = false; clearInterval(pingTimer); clearInterval(stateTimer);
-          lastError = why || (code === 4029 ? 'The relay has used its allowance for this month.' : code === 4008 ? 'Too many messages: the relay closed the line.' : 'This app needs a key to use the relay.');
+          lastError = why || (code === 4029 ? 'The relay has used its allowance for this month.' : code === 4008 ? 'Too many messages: the relay closed the line.' : 'The relay did not accept this app’s key.');
           why = ''; setStatus('error'); return;
         }
         tries++; lastError = code === 4030 ? (why || 'The relay is busy. Trying again in a minute.') : 'Cannot reach the relay. Trying again.';
@@ -238,23 +283,12 @@
     // ---- the optional panel: plain elements that take the host page's font and colour ----
     function panel() {
       var doc = root.document;
-      if (!doc.getElementById('ih-style')) {
-        var st = doc.createElement('style'); st.id = 'ih-style';
-        st.textContent = '.ih{font:inherit;color:inherit;display:flex;flex-direction:column;gap:12px;max-width:440px}' +
-          '.ih-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}' +
-          '.ih button,.ih input[type=text]{font:inherit;color:inherit;background:transparent;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 40%,transparent);border-radius:999px;padding:7px 14px;min-height:38px;cursor:pointer}' +
-          '.ih input[type=text]{flex:1;min-width:130px;border-radius:10px;cursor:text}' +
-          '.ih button:disabled{opacity:.45;cursor:default}' +
-          '.ih-dot{flex:none;width:10px;height:10px;border-radius:50%;background:currentColor;opacity:.3}.ih-dot.on{opacity:1;background:#5fe0c0}.ih-dot.wait{opacity:.8;background:#e8b04a}' +
-          '.ih-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:1.05em;letter-spacing:.03em;user-select:all;-webkit-user-select:all;word-break:break-all}' +
-          '.ih-peers{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}.ih-peers li{padding:0;margin:0}.ih-peers li::before{content:none}' +
-          '.ih-note{margin:0;opacity:.72;font-size:.9em;line-height:1.4}.ih label{display:flex;gap:8px;align-items:center;cursor:pointer}';
-        doc.head.appendChild(st);
-      }
+      style();
       var el = function (tag, cls, txt) { var e = doc.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; };
       var box = el('div', 'ih'), copied = 0;
       function draw() {
         while (box.firstChild) box.removeChild(box.firstChild);
+        var head = el('div', 'ih-head'); head.appendChild(icon({ size: 26 })); head.appendChild(el('span', '', 'Invisible Hands')); box.appendChild(head);
         var row = el('div', 'ih-row'), dot = el('span', 'ih-dot' + (status === 'on' ? ' on' : status === 'connecting' || status === 'retrying' ? ' wait' : ''));
         var words = status === 'on' ? 'Linked' : status === 'connecting' ? 'Connecting…' : status === 'retrying' ? 'Reconnecting…' : status === 'error' ? 'Not linked' : 'Not linked';
         row.appendChild(dot); row.appendChild(el('span', '', words)); box.appendChild(row);
@@ -296,6 +330,47 @@
       return box;
     }
 
+    // ---- the mark, tacked onto an app's own controls: hands.tag('speed') next to the Speed slider.
+    // Grey while unlinked, coloured once linked, full strength while others are in the room; the pointer follows
+    // the value, and the orange ink jumps when someone else moves it.
+    var tags = [], badges = [], tagDue = false;
+    function angle(v) { return -135 + 270 * clamp(v, 0, 1); }
+    function paintTags() {
+      tagDue = false;
+      var linked = status === 'on' && allow, live = linked && peers.size > 0;
+      tags.forEach(function (t) {
+        t.el.classList.toggle('ih-linked', linked); t.el.classList.toggle('ih-live', live);
+        var p = param(t.pid); if (p) t.ptr.setAttribute('transform', 'rotate(' + angle(read(p)).toFixed(1) + ' 16 16)');
+      });
+      badges.forEach(function (b) { b.n.textContent = status === 'on' ? (peers.size ? '· ' + peers.size : '· alone') : status === 'error' ? '· off' : ''; b.icon.style.opacity = status === 'on' ? 1 : 0.45; });
+    }
+    function laterTags() { if (!tagDue && (tags.length || badges.length)) { tagDue = true; (root.requestAnimationFrame || setTimeout)(paintTags); } }
+    function hit(list) { list.forEach(function (e) { e.classList.add('ih-hit'); clearTimeout(e._ihT); e._ihT = setTimeout(function () { e.classList.remove('ih-hit'); }, 220); }); }
+    on('status', laterTags); on('peers', laterTags); on('allow', laterTags);
+    on('in', function (m) { laterTags(); hit(tags.filter(function (t) { return t.pid === m.p; }).map(function (t) { return t.el; })); hit(badges.map(function (b) { return b.box; })); });
+    function tag(pid, o) {
+      style(); o = o || {};
+      var el = icon({ mini: true, size: o.size || 16, title: o.title || 'Others can move this, over Invisible Hands' });
+      el.classList.add('ih-tag');
+      var t = { pid: pid, el: el, ptr: el.querySelector('.ih-pointer') };
+      tags.push(t); laterTags();
+      return el;
+    }
+    // a small button with the mark that opens the panel; put it in a toolbar
+    function badge(o) {
+      style(); o = o || {};
+      var doc = root.document, box = doc.createElement('span'), btn = doc.createElement('button'), n = doc.createElement('span'), pop = null;
+      box.className = 'ih-badge'; btn.type = 'button'; btn.setAttribute('aria-expanded', 'false'); n.className = 'ih-n';
+      var ic = icon({ size: 24 }); btn.appendChild(ic);
+      var lab = doc.createElement('span'); lab.textContent = o.label || 'Hands'; btn.appendChild(lab); btn.appendChild(n);
+      btn.onclick = function () {
+        if (pop) { pop.remove(); pop = null; btn.setAttribute('aria-expanded', 'false'); return; }
+        pop = doc.createElement('div'); pop.className = 'ih-pop'; pop.appendChild(panel()); box.appendChild(pop); btn.setAttribute('aria-expanded', 'true');
+      };
+      box.appendChild(btn); badges.push({ box: box, n: n, icon: ic }); laterTags();
+      return box;
+    }
+
     var api = {
       version: VERSION,
       get room() { return room; }, get id() { return id; }, get status() { return status; }, get error() { return lastError; },
@@ -303,10 +378,10 @@
       get peers() { return Array.from(peers.values()); },
       get allow() { return allow; }, set allow(v) { allow = !!v; if (!allow) { ramps.forEach(function (r) { clearTimeout(r.timer); }); ramps.clear(); } emit('allow', allow); },
       get latency() { return rtt === null ? null : Math.round(rtt / 2); },
-      on: on, join: join, leave: leave, makeCode: makeCode, inviteUrl: inviteUrl, panel: panel,
+      on: on, join: join, leave: leave, makeCode: makeCode, inviteUrl: inviteUrl, panel: panel, tag: tag, badge: badge,
       newRoom: function () { var c = makeCode(); join(c); return c; },
       describe: function () { describe(); },                        // call again if your controls change
-      recenter: function (pid) { stopRamp(pid); base.delete(pid); },   // call when the person moves a control by hand: modulation then swings around the new value
+      recenter: function (pid) { stopRamp(pid); base.delete(pid); laterTags(); },   // call when the person moves a control by hand: modulation then swings around the new value
       serverNow: function () { return Date.now() + offset; },         // the relay's clock, for timed ramps
       // sending: `to` is a peer (or its id), 'app:<slug>' for every copy of an app, or nothing for everyone
       set: function (to, p, v) { v = r4(clamp(+v || 0, 0, 1)); to = target(to) || undefined; return changed(to, p, 's', v) ? send({ t: 'set', to: to, p: p, v: v }) : true; },
@@ -319,5 +394,5 @@
     return api;
   }
 
-  root.InvisibleHands = { create: create, makeCode: makeCode, version: VERSION };
+  root.InvisibleHands = { create: create, makeCode: makeCode, icon: function (o) { style(); return icon(o); }, version: VERSION };
 })(typeof window !== 'undefined' ? window : globalThis);

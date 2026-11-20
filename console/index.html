@@ -5,31 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Invisible Hands</title>
 <meta name="robots" content="noindex">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23ECEDE9%22/%3E%3Ctext x=%2217%22 y=%2226%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%23F2369B%22%3EH%3C/text%3E%3Ctext x=%2215%22 y=%2224%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%2318181B%22%3EH%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="../brand/ih-mark.svg"><link rel="alternate icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23ECEDE9%22/%3E%3Ctext x=%2217%22 y=%2226%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%23F2369B%22%3EH%3C/text%3E%3Ctext x=%2215%22 y=%2224%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%2318181B%22%3EH%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&family=Courier+Prime:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@800;900&family=Courier+Prime:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../site/site.css">
 <style>
 /* the console: the same clippings-on-paper look as the site */
 main { max-width: 900px; margin: 0 auto; padding: 0 16px 60px; }
 .cmast { padding: 26px 0 18px; border-bottom: 2px solid var(--toner); margin-bottom: 18px; }
-.cmast h1 { font: 400 clamp(2.2rem, 8vw, 3.6rem)/.9 var(--display); margin: 10px 0 8px; text-shadow: 3px 3px 0 var(--pink); }
-.cmast h1 span { font-family: var(--body); font-weight: 600; color: var(--blue); letter-spacing: -.03em; text-shadow: none; }
+.cmast h1 { font: 900 clamp(3rem, 11vw, 5rem)/.85 var(--display); margin: 12px 0 8px; text-shadow: 3px 3px 0 var(--flame); text-transform: uppercase; }
+.cmast h1 span { color: var(--teal); }
 .lede { font-size: 1rem; max-width: 56ch; color: var(--muted); }
-h2 { font: 700 .76rem/1 var(--type); letter-spacing: .14em; text-transform: uppercase; color: var(--blue); margin: 0 0 10px; }
+h2 { font: 700 .76rem/1 var(--type); letter-spacing: .14em; text-transform: uppercase; color: var(--teal); margin: 0 0 10px; }
 section { background: var(--sheet); border: 1px solid var(--rule); padding: 18px 16px 16px; margin-top: 22px; position: relative; }
-section::before { content: ""; position: absolute; top: -9px; left: 50%; width: 70px; height: 17px; transform: translateX(-50%) rotate(-3deg); background: color-mix(in srgb, var(--blue) 22%, transparent); border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent); }
+section::before { content: ""; position: absolute; top: -9px; left: 50%; width: 70px; height: 17px; transform: translateX(-50%) rotate(-3deg); background: color-mix(in srgb, var(--teal) 22%, transparent); border: 1px solid color-mix(in srgb, var(--teal) 30%, transparent); }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
 @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
 label.f { display: grid; grid-template-columns: 92px 1fr 64px; gap: 10px; align-items: center; font: 700 .8rem var(--type); margin-top: 8px; }
 label.f output { font-weight: 400; text-align: right; }
-input[type=range] { width: 100%; accent-color: var(--blue); min-height: 30px; }
+input[type=range] { width: 100%; accent-color: var(--teal); min-height: 30px; }
 input[type=text] { font: 1rem var(--body); color: inherit; background: var(--paper); border: 1.5px solid var(--rule); padding: 8px 10px; min-height: 40px; width: 100%; }
 button { font: 700 .78rem/1 var(--type); color: var(--toner); background: transparent; border: 1.5px solid var(--toner); padding: 8px 11px; min-height: 36px; cursor: pointer; }
-button:hover { background: var(--blue); border-color: var(--blue); color: var(--paper); }
-button[aria-pressed="true"] { background: var(--pink); border-color: var(--pink); color: #fff; }
-.peer h3 { font: 400 1.4rem/1.05 var(--display); margin: 0; }
+button:hover { background: var(--teal); border-color: var(--teal); color: var(--paper); }
+button[aria-pressed="true"] { background: var(--flame); border-color: var(--flame); color: #fff; }
+.peer h3 { font: 900 1.8rem/1 var(--display); margin: 0; text-transform: uppercase; }
 .peer .app { font: 400 .8rem var(--type); color: var(--muted); margin: 2px 0 8px; }
 .row { display: grid; grid-template-columns: minmax(110px, 170px) 1fr auto auto; gap: 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--rule); }
 .row:first-of-type { border-top: 0; }
@@ -38,23 +38,37 @@ button[aria-pressed="true"] { background: var(--pink); border-color: var(--pink)
 .outs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 14px; margin-top: 12px; }
 .meter { font: 700 .76rem var(--type); color: var(--muted); }
 .meter i { display: block; height: 8px; background: color-mix(in srgb, var(--toner) 8%, transparent); border: 1px solid var(--rule); margin-top: 3px; }
-.meter i b { display: block; height: 100%; width: 0; background: var(--blue); }
+.meter i b { display: block; height: 100%; width: 0; background: var(--teal); }
 .empty { color: var(--muted); font-family: var(--type); }
 .small { font: 400 .82rem/1.45 var(--type); color: var(--muted); margin-top: 10px; }
 .ih-dot.on { background: #22a06b !important; }
+/* the patch matrix */
+.mx-wrap { overflow-x: auto; margin-top: 6px; }
+.mx { border-collapse: collapse; }
+.mx th, .mx td { padding: 0; }
+.mx-col { vertical-align: bottom; height: 150px; }
+.mx-col span { writing-mode: vertical-rl; transform: rotate(180deg); font: 700 .74rem/1.1 var(--type); white-space: nowrap; max-height: 145px; overflow: hidden; text-overflow: ellipsis; display: inline-block; padding: 4px 0; }
+.mx-row { font: 700 .76rem/1.2 var(--type); text-align: right; padding-right: 10px !important; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.mx .gone { opacity: .4; }
+.mx td { width: 34px; height: 34px; text-align: center; border: 1px solid var(--rule); }
+.pin { --v: .5; width: 18px; height: 18px; min-height: 0; padding: 0; border-radius: 50%; border: 1.5px solid var(--muted) !important; background: transparent; }
+.pin:hover { border-color: var(--teal) !important; background: color-mix(in srgb, var(--teal) 20%, transparent); }
+.pin.on { border-color: var(--flame) !important; background: radial-gradient(circle, var(--flame) calc(var(--v) * 100%), color-mix(in srgb, var(--flame) 25%, transparent) calc(var(--v) * 100% + 1%)); }
+.pin.sel { outline: 3px solid var(--teal); outline-offset: 2px; }
+.cable-h { font: 900 1.3rem/1.1 var(--display); text-transform: uppercase; margin: 14px 0 4px; }
 /* the built-in panel, in house style */
 .ih button, .ih input[type=text] { border-radius: 0 !important; border: 1.5px solid var(--toner) !important; font: 700 .78rem/1 var(--type) !important; min-height: 38px; }
 .ih input[type=text] { font: 1rem var(--body) !important; background: var(--paper) !important; }
-.ih button:hover { background: var(--blue); border-color: var(--blue) !important; color: var(--paper); }
-.ih-code { color: var(--blue); font-family: var(--type) !important; font-weight: 700; }
+.ih button:hover { background: var(--teal); border-color: var(--teal) !important; color: var(--paper); }
+.ih-code { color: var(--teal); font-family: var(--type) !important; font-weight: 700; }
 </style>
 </head>
 <body>
 <main>
   <header class="cmast">
-    <div class="kicker"><a href="../">Invisible Hands</a><span>The console</span><span class="r"><a href="../docs/">Docs</a> · <a href="https://megazine.org/">megaZINE</a></span></div>
+    <div class="kicker"><a href="../"><svg class="ih-icon" style="width:22px;height:22px;margin:-6px 6px -6px 0;vertical-align:middle;color:var(--toner)" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="ih-flame" cx="17.5" cy="17.5" r="10.6" fill="var(--ih-flame)"/><circle cx="16" cy="16" r="10.6" fill="var(--ih-teal)"/><g class="ih-pointer" transform="rotate(38 16 16)"><path d="M16 16V8.6" stroke="var(--ih-cut)" stroke-width="3" stroke-linecap="round"/></g><path d="M11.14 2.66A14.2 14.2 0 0 1 21.32 2.83M27.49 7.65A14.2 14.2 0 0 1 30.12 17.48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="0.1 3.6"/></svg>Invisible Hands</a><span>The console</span><span class="r"><a href="../docs/">Docs</a> · <a href="https://megazine.org/">megaZINE</a></span></div>
     <h1>CON<span>sole</span></h1>
-    <p class="lede">Move another app's controls from anywhere. Join the same room as an app that has Invisible Hands in it, and its controls appear below: drag one, set an LFO swinging it, or fire an envelope at it.</p>
+    <p class="lede">Move another app's controls from anywhere. Join the same room as an app that has Invisible Hands in it, and its controls appear below: drag one, set an LFO swinging it, fire an envelope at it, or patch one app’s output into another app’s knob.</p>
   </header>
 
   <div class="grid">
@@ -75,6 +89,14 @@ button[aria-pressed="true"] { background: var(--pink); border-color: var(--pink)
       <p class="small">An LFO swings a control around wherever its owner left it. An envelope rises to the top and falls back, and is played on the far machine so the network cannot roughen it.</p>
     </section>
   </div>
+
+  <section aria-labelledby="hPatch" id="patch-sec">
+    <h2 id="hPatch">Patch matrix</h2>
+    <p class="small" style="margin-top:0">Outputs down the side, knobs across the top. Click a pin to run a cable: that output swings that knob, around wherever its owner left it. Click a lit pin to set its depth, flip it, or pull it out. The patch is saved in this page’s address, so a copied link brings the cables with it.</p>
+    <div id="matrix"></div>
+    <div id="cable"></div>
+    <p class="small"><b>Want more than a patch bay?</b> Bring <a href="https://crumplabsandbox.github.io/mega-cv/" target="_blank" rel="noopener">MEGA·CV</a> into the room. It’s the best modulator for Invisible Hands: oscillators, envelopes, sequencers and sound itself, patched into any knob here.</p>
+  </section>
 
   <div id="peers"></div>
 </main>
@@ -108,15 +130,99 @@ function settings(){
 for(const id of ['rate','depth','att','dec'])$(id).addEventListener('input',settings);
 settings();
 
-// ---- LFOs: one sine per control that has its LFO button on, sent as `mod` twenty times a second ----
+// ---- LFOs and patch cables, summed per knob and sent as one `mod` each, twenty times a second ----
+// (one timer, so a tick's moves leave together as a single frame)
 const lfos=new Map();   // "peer/param" -> {peer, p, t0}
+let cables=[];          // {s:"app|out", d:"app|param", depth:0..1, inv:bool}
+let touched=new Set();  // "peer/param" this console swung last tick, to let go when a cable is pulled
 setInterval(()=>{
-  const now=performance.now()/1000;
+  const now=performance.now()/1000, sum=new Map(), peers=hands.peers;
+  const add=(peer,p,v)=>{const k=peer+'/'+p;sum.set(k,(sum.get(k)||0)+v);};
   for(const [key,l] of lfos){
-    if(!hands.peers.some(q=>q.id===l.peer)){lfos.delete(key);continue;}
-    hands.mod(l.peer,l.p,H.depth*Math.sin(2*Math.PI*H.rate*(now-l.t0)));
+    if(!peers.some(q=>q.id===l.peer)){lfos.delete(key);continue;}
+    add(l.peer,l.p,H.depth*Math.sin(2*Math.PI*H.rate*(now-l.t0)));
   }
+  for(const c of cables){
+    const [sa,so]=c.s.split('|'),[da,dp]=c.d.split('|');
+    const src=peers.find(q=>q.app===sa&&typeof q.state[so]==='number');
+    if(!src)continue;
+    const x=(src.state[so]-0.5)*2*c.depth*(c.inv?-1:1);
+    for(const q of peers)if(q.app===da&&q.params.some(p=>p.id===dp))add(q.id,dp,x);
+    const pin=document.querySelector('[data-cable="'+CSS.escape(c.s+'>'+c.d)+'"]');if(pin)pin.style.setProperty('--v',src.state[so].toFixed(3));
+  }
+  for(const k of touched)if(!sum.has(k)){const i=k.indexOf('/');hands.mod(k.slice(0,i),k.slice(i+1),0);}
+  touched=new Set(sum.keys());
+  for(const [k,v] of sum){const i=k.indexOf('/');hands.mod(k.slice(0,i),k.slice(i+1),Math.max(-1,Math.min(1,v)));}
 },50);
+
+// ---- the patch matrix ----
+let editing=null;
+function saveCables(){
+  const enc=cables.map(c=>c.s+'>'+c.d+'@'+Math.round(c.depth*100)+(c.inv?'~':'')).join(',');
+  try{const u=new URL(location.href);u.hash=enc?'patch='+encodeURIComponent(enc):'';history.replaceState(null,'',u);}catch(err){}
+}
+function loadCables(){
+  const m=location.hash.match(/patch=([^&]*)/);if(!m)return;
+  try{cables=decodeURIComponent(m[1]).split(',').map(e=>{const r=e.match(/^([^>]{1,140})>([^@]{1,140})@(\d{1,3})(~?)$/);return r&&{s:r[1],d:r[2],depth:Math.min(100,+r[3])/100,inv:!!r[4]};}).filter(Boolean).slice(0,64);}catch(err){cables=[];}
+}
+loadCables();
+function renderMatrix(){
+  const box=$('matrix');box.textContent='';
+  const outs=[],ins=[],seenO=new Set(),seenI=new Set();
+  for(const q of hands.peers){
+    for(const o of q.outs){const k=q.app+'|'+o.id;if(!seenO.has(k)){seenO.add(k);outs.push({k,app:q.name,label:o.label||o.id});}}
+    for(const p of q.params){if(p.kind==='trig'||p.kind==='toggle')continue;const k=q.app+'|'+p.id;if(!seenI.has(k)){seenI.add(k);ins.push({k,app:q.name,label:p.label||p.id});}}
+  }
+  // cables whose ends are not in the room right now are kept, shown greyed, and come back when the apps do
+  for(const c of cables){
+    if(!seenO.has(c.s)){seenO.add(c.s);outs.push({k:c.s,app:c.s.split('|')[0],label:c.s.split('|')[1],gone:true});}
+    if(!seenI.has(c.d)){seenI.add(c.d);ins.push({k:c.d,app:c.d.split('|')[0],label:c.d.split('|')[1],gone:true});}
+  }
+  if(!outs.length||!ins.length){
+    const p=document.createElement('p');p.className='empty';
+    p.textContent=hands.status!=='on'?'Join a room to see what can be patched.':!outs.length?'Nothing in this room publishes an output yet. Outputs are what cables come from.':'Nothing in this room has a knob to patch into yet.';
+    box.appendChild(p);renderCable();return;
+  }
+  const wrap=document.createElement('div');wrap.className='mx-wrap';
+  const t=document.createElement('table');t.className='mx';
+  const hr=document.createElement('tr');hr.appendChild(document.createElement('th'));
+  for(const i of ins){const th=document.createElement('th');th.className='mx-col'+(i.gone?' gone':'');const sp=document.createElement('span');sp.textContent=i.app+' · '+i.label;th.appendChild(sp);th.title=sp.textContent;hr.appendChild(th);}
+  t.appendChild(hr);
+  for(const o of outs){
+    const tr=document.createElement('tr'),th=document.createElement('th');th.className='mx-row'+(o.gone?' gone':'');th.textContent=o.app+' · '+o.label;tr.appendChild(th);
+    for(const i of ins){
+      const td=document.createElement('td'),b=document.createElement('button');b.type='button';b.className='pin';
+      const key=o.k+'>'+i.k,c=cables.find(x=>x.s===o.k&&x.d===i.k);
+      if(c){b.classList.add('on');b.setAttribute('data-cable',key);if(editing===key)b.classList.add('sel');}
+      b.setAttribute('aria-label',(c?'Cable from ':'Patch ')+o.app+' '+o.label+' to '+i.app+' '+i.label);b.setAttribute('aria-pressed',String(!!c));
+      b.onclick=()=>{
+        if(!c){cables.push({s:o.k,d:i.k,depth:0.5,inv:false});editing=key;}
+        else editing=editing===key?null:key;
+        saveCables();renderMatrix();
+      };
+      td.appendChild(b);tr.appendChild(td);
+    }
+    t.appendChild(tr);
+  }
+  wrap.appendChild(t);box.appendChild(wrap);renderCable();
+}
+function renderCable(){
+  const box=$('cable');box.textContent='';
+  const c=cables.find(x=>x.s+'>'+x.d===editing);if(!c)return;
+  const name=k=>{const [a,id]=k.split('|'),q=hands.peers.find(x=>x.app===a);if(!q)return a+' · '+id;const it=q.outs.concat(q.params).find(x=>x.id===id);return q.name+' · '+(it&&it.label||id);};
+  const h=document.createElement('p');h.className='cable-h';h.textContent=name(c.s)+'  →  '+name(c.d);box.appendChild(h);
+  const l=document.createElement('label');l.className='f';l.textContent='Depth';
+  const r=document.createElement('input');r.type='range';r.min=0;r.max=100;r.value=Math.round(c.depth*100);
+  const out=document.createElement('output');out.textContent=r.value+'%';
+  r.oninput=()=>{c.depth=r.value/100;out.textContent=r.value+'%';saveCables();};
+  l.append(r,out);box.appendChild(l);
+  const row=document.createElement('p');row.style.display='flex';row.style.gap='8px';row.style.marginTop='10px';
+  const inv=document.createElement('button');inv.type='button';inv.textContent='Flip';inv.setAttribute('aria-pressed',String(c.inv));
+  inv.onclick=()=>{c.inv=!c.inv;inv.setAttribute('aria-pressed',String(c.inv));saveCables();};
+  const del=document.createElement('button');del.type='button';del.textContent='Pull the cable';
+  del.onclick=()=>{cables=cables.filter(x=>x!==c);editing=null;saveCables();renderMatrix();};
+  row.append(inv,del);box.appendChild(row);
+}
 
 // ---- the room's apps and their controls ----
 const meters=new Map();   // "peer/out" -> the bar element
@@ -160,7 +266,7 @@ function render(){
     box.appendChild(sec);
   }
 }
-hands.on('peers',render);hands.on('status',render);
+hands.on('peers',render);hands.on('status',render);hands.on('peers',renderMatrix);hands.on('status',renderMatrix);renderMatrix();
 hands.on('state',peer=>{for(const k in peer.state){const b=meters.get(peer.id+'/'+k);if(b)b.style.width=Math.round(peer.state[k]*100)+'%';}});
 render();
 window.HANDS=hands;

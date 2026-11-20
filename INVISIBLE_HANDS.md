@@ -19,14 +19,6 @@ Three roles. Work out which the app needs:
 - **Source** (move others): the app makes modulation: LFOs, envelopes, sequencers, sensors, a mod matrix.
 - **Both**: a destination that also publishes outputs, or a source that is also movable.
 
-## Step 0. A key
-
-The relay is shared and its running costs are paid by the megaZINE editors, so apps outside their own sites (`samuelling.github.io`, `crumplabsandbox.github.io`, `megazine.org`) need a **key**: `ih_` followed by 20 letters and digits.
-
-- If the person already has one, use it: `create({ key: 'ih_…' })`. A key is tied to the website it was issued for, so it may sit in the page's code.
-- If not, tell the person to ask for one on the website (https://samuelling.github.io/InvisibleHands/#key): a one-time request through the megaZINE finger-gun form or the BBS, giving the app's name and web address. Build and test everything meanwhile with a local relay (Step 6), which needs no key.
-- A program that isn't a web page (Python, a command line) needs a **native** key. Keep it out of public code: read it from an environment variable (`INVISIBLE_HANDS_KEY`).
-
 ## Step 1. Choose what to expose
 
 If the person told you which controls, use those. Otherwise read the app and propose a list, then ask once. Good candidates:
@@ -78,7 +70,6 @@ Create it **once**, after the app's state exists:
 const hands = InvisibleHands.create({
   app: 'my-app',                 // slug for the kind of app: a-z 0-9 . _ - ; same for every copy of this app
   name: 'My App',                // what people see
-  key: 'ih_…',                   // from Step 0; leave out on the editors' own sites
   params: [
     { id: 'speed', label: 'Speed', get: () => unexpo(state.speed, 0.1, 10), set: v => { state.speed = expo(v, 0.1, 10); } },
     { id: 'hue',   label: 'Hue',   get: () => state.hue, set: v => { state.hue = v; } },
@@ -108,6 +99,15 @@ Every movable app must (1) show when it is linked, (2) give the person a way to 
 settingsBox.append(hands.panel());   // Start a room · Join · Copy invite link · Leave · "Let others move my controls"
 ```
 
+**Pin the mark** on every control you exposed, right after its label, so people know why it might move by itself:
+
+```js
+speedLabel.append(hands.tag('speed'));   // the Invisible Hands mark: grey unlinked, lit when linked, jumps on remote moves
+toolbar.append(hands.badge());           // optional: a button with the mark that opens the panel
+```
+
+Only controls that are actually offered get a tag. `InvisibleHands.icon({ size: 24 })` draws the mark alone if the app needs it somewhere else. The look is described at https://samuelling.github.io/InvisibleHands/brand/.
+
 `panel()` returns a plain element that takes the host page's font and colour. Put it where the app keeps its settings or behind a small button (a hand icon, or the word "Hands"). Don't put it over the main view by default. If you build your own UI instead, use `hands.status`, `hands.room`, `hands.peers`, `hands.inviteUrl()`, `hands.join(code)`, `hands.newRoom()`, `hands.leave()`, and the `hands.allow` switch.
 
 A page opened with `?room=<code>` joins that room by itself, so an invite link is just the app's address plus `?room=`.
@@ -115,6 +115,8 @@ A page opened with `?room=<code>` joins that room by itself, so an invite link i
 Never insert another app's `name`, `label` or `id` into the page as HTML. Use `textContent`. The relay strips control characters and cuts text to 64 characters, but treat everything from other peers as untrusted text.
 
 ## Step 4. Sending (sources)
+
+First check the person needs one. Wiring two apps directly is what the console's patch matrix does (https://samuelling.github.io/InvisibleHands/console/), and MEGA·CV (https://crumplabsandbox.github.io/mega-cv/) is the best general modulator for Invisible Hands. Write a source only when the app itself should do the turning.
 
 ```js
 const hands = InvisibleHands.create({ app: 'my-lfo', name: 'My LFO' });   // params can be empty
@@ -131,28 +133,28 @@ hands.on('state', peer => { /* peer.state.level, 0..1: use as a modulation sourc
 
 Timing rules:
 
-- **Every frame costs the relay money, whatever its size.** The library already skips repeated values, packs moves made in the same moment into one frame, and pings rarely. Your part: make all of one tick's moves in the same callback (one timer for all LFOs, not one timer each), so they leave together.
+- **Every frame costs the relay money, whatever its size** (it is free to use; the megaZINE editors pay for it). The library already skips repeated values, packs moves made in the same moment into one frame, and pings rarely. Your part: make all of one tick's moves in the same callback (one timer for all LFOs, not one timer each), so they leave together.
 - Continuous movement (LFOs, a hand on a slider): send `mod` or `set` at **at most 20 to 25 per second per control**, and only when the value changed by more than about 0.003. Slow LFOs (under 1 Hz) look the same at 10 per second. The relay allows 120 messages a second per connection with a burst of 240, and closes connections that keep flooding.
 - Sharp shapes (envelopes, gates, drum hits): send **one `ramp`**, not a stream of sets. Give it `at: hands.serverNow() + 80` so every copy of the destination starts together.
 - Browsers throttle timers in hidden tabs to once a second. If the source must keep sending while in the background, drive the send loop from a Web Worker timer (`new Worker(URL.createObjectURL(new Blob(['setInterval(()=>postMessage(0),40)'])))`), not `requestAnimationFrame`.
 - When you stop modulating a control, send `mod` with `0` (or a final `set`) so it doesn't stay where you happened to leave it. When a new peer joins, re-send current values: it has never heard them. Don't add "keep-alive" re-sends of unchanged values.
-- If `hands.status` becomes `'error'`, the relay refused for a reason retrying won't fix (no key, wrong website, monthly allowance used). Show `hands.error` to the person; don't loop.
+- If `hands.status` becomes `'error'`, the relay refused for a reason retrying won't fix (the relay's monthly allowance is used up, or a key it doesn't know). Show `hands.error` to the person; don't loop.
 
 ## Step 5. Not a web page?
 
-- **Python** (desktop tools, TouchDesigner, Blender, a Raspberry Pi, a data feed): use `invisible_hands.py` from the kit (`pip install websockets`), with `Hands(..., key=os.environ['INVISIBLE_HANDS_KEY'])`. Same API: `hands.param(...)`, `hands.out(...)`, `hands.start(code)`, `hands.set/mod/ramp(...)`. Use `start(code, poll=True)` and call `hands.poll()` every frame when the host app is single-threaded (Blender, TouchDesigner, pygame), so `set` runs on the host's thread.
+- **Python** (desktop tools, TouchDesigner, Blender, a Raspberry Pi, a data feed): use `invisible_hands.py` from the kit (`pip install websockets`). Same API: `hands.param(...)`, `hands.out(...)`, `hands.start(code)`, `hands.set/mod/ramp(...)`. Use `start(code, poll=True)` and call `hands.poll()` every frame when the host app is single-threaded (Blender, TouchDesigner, pygame), so `set` runs on the host's thread.
 - **Max, Pd, Ableton Live, SuperCollider, TouchDesigner via OSC**: run `python invisible_hands.py osc <room> --param cutoff --param warp`. OSC `/hands/set/<to>/<param> v`, `/hands/mod/<to>/<param> v` go into the room; remote moves of `--param` controls arrive as `/hands/param/<id> v`, and other apps' outputs as `/hands/state/<app>/<out> v`.
 - **Node**: `invisible-hands.js` works as-is in Node 22+ (load it, then `globalThis.InvisibleHands`); skip `panel()`.
-- **Anything else** (Swift, Kotlin, C++, Go, Rust, Lua): it is JSON over one WebSocket. Read `SPEC.md` and `GUIDE.md` in the kit and write a small client: connect (with `&key=`), answer `welcome` with `describe`, re-`describe` to each `join`, apply `set`/`mod`/`ramp` with clamping, publish `state` at most 15 times a second and only when outputs change, and don't retry after close codes 4001, 4003, 4008 or 4029. `GUIDE.md` has a full wire transcript and short clients to copy from.
+- **Anything else** (Swift, Kotlin, C++, Go, Rust, Lua): it is JSON over one WebSocket. Read `SPEC.md` and `GUIDE.md` in the kit and write a small client: connect, answer `welcome` with `describe`, re-`describe` to each `join`, apply `set`/`mod`/`ramp` with clamping, publish `state` at most 15 times a second and only when outputs change, and don't retry after close codes 4001, 4003, 4008 or 4029. `GUIDE.md` has a full wire transcript and short clients to copy from.
 
 ## Step 6. Test it, then tell the person
 
-1. Run the app. Open the panel and press **Start a room** (or open the app with `?room=test-<anything>`). Without a key yet, test against a local relay instead: `cd relay && npm install && npm run dev`, then open the app with `?relay=ws://localhost:8787`.
+1. Run the app. Open the panel and press **Start a room** (or open the app with `?room=test-<anything>`). To test offline, run the relay locally (`cd relay && npm install && npm run dev`) and open the app with `?relay=ws://localhost:8787`.
 2. Open the **console** in another tab or on a phone with the same room: `https://samuelling.github.io/InvisibleHands/console/?room=<code>`. The app's controls appear there; drag one, press LFO, press Env. Its outputs show as meters.
-3. Check: every exposed control moves the app and the app's own UI follows; the panel shows Linked; unticking "Let others move my controls" stops remote moves at once; outputs meter in the console; nothing breaks when the console leaves or the network drops (the library reconnects by itself).
+3. Check: every exposed control moves the app, the app's own UI follows, and its tag jumps; the panel shows Linked; unticking "Let others move my controls" stops remote moves at once; outputs meter in the console; nothing breaks when the console leaves or the network drops (the library reconnects by itself).
 4. If you can't open a browser yourself, say so and give the person these steps.
 
-Finish by telling the person: which controls you exposed (id, label, range mapping), what outputs the app publishes, where the panel is, and a ready-made test link: the app's address with `?room=<code>`, plus the console link with the same room.
+Finish by telling the person: which controls you exposed (id, label, range mapping), what outputs the app publishes, where the panel (or badge) is, and a ready-made test link: the app's address with `?room=<code>`, plus the console link with the same room.
 
 ## Don'ts
 
@@ -161,8 +163,7 @@ Finish by telling the person: which controls you exposed (id, label, range mappi
 - Don't expose a control that executes code, loads a URL, or reads files.
 - Don't send faster than the timing rules say, and don't send from inside a `set` callback (that's how loops start).
 - Don't store room codes anywhere public: anyone who has one can join that room.
-- Don't put a **native** key in a web page or a public repository. Website keys are fine in a page: they only work from their website.
 
 ## The limits (enforced by the relay)
 
-16 connections per room · 32 KB per message · 128 controls and 64 outputs per app · 32 points per ramp, each up to 10 minutes · text 64 characters · 240-message burst, refilling at 120 per second, per connection · 30 new connections a minute per IP address · a monthly allowance per key (2 million frames unless the editors set another).
+16 connections per room · 32 KB per message · 128 controls and 64 outputs per app · 32 points per ramp, each up to 10 minutes · text 64 characters · 240-message burst, refilling at 120 per second, per connection · 30 new connections a minute per IP address · a monthly allowance for the whole relay: if it runs out, the relay closes until the 1st.

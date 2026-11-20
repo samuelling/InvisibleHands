@@ -20,7 +20,7 @@ The whole thing is JSON text over one WebSocket. If your language can open a Web
 Two apps in room `moss-kiln-opal-fern-42`: a grove of shapes (the destination) and an LFO (the source). `→` is what an app sends, `←` what the relay sends it.
 
 ```
-GROVE opens  wss://invisible-hands.samuelling.workers.dev/room/moss-kiln-opal-fern-42?app=grove&name=Grove&key=ih_…
+GROVE opens  wss://invisible-hands.samuelling.workers.dev/room/moss-kiln-opal-fern-42?app=grove&name=Grove
 GROVE ←  {"t":"welcome","v":1,"batch":true,"id":"p7m2zd","now":1795000000000,"peers":[]}
 GROVE →  {"t":"describe","params":[{"id":"spread","label":"Spread","kind":"cont","value":0.4}],"outs":[{"id":"sway","label":"Sway"}]}
 
@@ -49,7 +49,7 @@ GROVE ←  {"t":"leave","id":"k3x9qa"}
 
 ## Writing a destination
 
-1. **Connect** to `wss://<relay>/room/<code>?app=<slug>&name=<url-encoded name>&key=<key>`. Room codes are 4 to 48 of `a-z 0-9 -`, starting with a letter or digit. Outside the editors' sites you need a key (ask on the website); a program that isn't a web page needs a *native* one. On a close, reconnect with backoff (0.5 s, 1 s, 2 s … up to 15 s), **except** after codes 4001, 4003, 4008 or 4029: those mean "no", so stop and show the `why` from the `error` message that came just before. After 4030, wait a minute.
+1. **Connect** to `wss://<relay>/room/<code>?app=<slug>&name=<url-encoded name>`. Room codes are 4 to 48 of `a-z 0-9 -`, starting with a letter or digit. No key is needed. On a close, reconnect with backoff (0.5 s, 1 s, 2 s … up to 15 s), **except** after codes 4001, 4003, 4008 or 4029: those mean "no", so stop and show the `why` from the `error` message that came just before. After 4030, wait a minute.
 2. **On `welcome`**, remember `id`, set your clock offset to `welcome.now - yourNowMs`, and send `describe` with every control's current value (0..1) and your outputs.
 3. **On `join`**, send `describe` again with `to` set to the newcomer's id.
 4. **On `set`**: clamp `v` to 0..1, stop any ramp on that control, apply it, and remember it as the control's **base**.
@@ -154,4 +154,4 @@ final class InvisibleHands {
 
 - Open the console at `https://samuelling.github.io/InvisibleHands/console/?room=<code>` with the same room: your controls should appear, the sliders and LFO buttons should move them, and your outputs should meter.
 - Or from a terminal: `python invisible_hands.py peers <code>` lists what's in the room, `python invisible_hands.py lfo <code> app:<slug> <param>` swings one control, `python invisible_hands.py listen <code>` prints outputs.
-- For a local relay: `cd relay && npm install && npm run dev`, then use `ws://localhost:8787` as the relay. It needs no key, so build there while you wait for yours.
+- For a local relay: `cd relay && npm install && npm run dev`, then use `ws://localhost:8787` as the relay.

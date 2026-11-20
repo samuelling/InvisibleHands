@@ -95,9 +95,8 @@ class Peer:
 
 class Hands:
     def __init__(self, app='python', name=None, relay=None, key=None, state_hz=15, allow=True):
-        """app: a slug for the kind of program. key: 'ih_…' from the editors (needed outside their own sites)."""
+        """app: a slug for the kind of program. key: optional, only for an app the editors gave one."""
         self.app = str(app)
-        # A key from the editors. Programs that aren't web pages need a "native" key; keep it out of public code.
         self.key = key if key and re.match(r'^ih_[a-z0-9]{20}$', key) else None
         self.error = ''               # why the relay refused, when status is 'error'
         self.name = str(name or app)
@@ -495,7 +494,7 @@ class Hands:
                     code = getattr(getattr(err, 'rcvd', None), 'code', None)
                     if code in (4001, 4003, 4008, 4029):   # refused for a reason retrying won't fix
                         self.error = self._why or {4029: "The relay has used its allowance for this month.",
-                                                   4008: 'Too many messages: the relay closed the line.'}.get(code, 'This program needs a key.')
+                                                   4008: 'Too many messages: the relay closed the line.'}.get(code, 'The relay did not accept this key.')
                         self._ws = None
                         self._set_status('error')
                         print('invisible_hands: ' + self.error, file=sys.stderr)
@@ -587,7 +586,7 @@ def _cli(argv=None):
     import argparse
     ap = argparse.ArgumentParser(prog='invisible_hands', description='Invisible Hands from the command line.')
     ap.add_argument('--relay', default=DEFAULT_RELAY, help='relay address (default: %(default)s)')
-    ap.add_argument('--key', default=os.environ.get('INVISIBLE_HANDS_KEY'), help='your key (or set INVISIBLE_HANDS_KEY)')
+    ap.add_argument('--key', default=os.environ.get('INVISIBLE_HANDS_KEY'), help='optional: a key the editors gave you (or set INVISIBLE_HANDS_KEY)')
     sub = ap.add_subparsers(dest='cmd', required=True)
 
     a = sub.add_parser('peers', help='list the apps in a room and their controls')

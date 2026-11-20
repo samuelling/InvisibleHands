@@ -1,12 +1,13 @@
 // Invisible Hands relay on Cloudflare: one Durable Object per room, WebSockets that hibernate when quiet,
-// a gate in front that checks keys, and one meter that keeps the month's count so the bill has a ceiling.
+// a gate in front, and one meter that keeps the month's count so the bill has a ceiling. Anyone may connect;
+// keys are optional (an app's own ceiling, or an editor's way past the relay's).
 // The message rules live in core.js; this file connects them to Cloudflare.
 //
-//   wss://<this worker>/room/<code>?app=<slug>&name=<display name>[&key=ih_...]
+//   wss://<this worker>/room/<code>?app=<slug>&name=<display name>[&key=ih_...]   (key optional)
 //
 // What costs money here, and what this file does about each:
 //   - every incoming WebSocket frame (20 frames bill as one request): rate limits per connection, batches,
-//     floods cut off, a monthly ceiling for everyone and a smaller one for each key.
+//     floods cut off, a monthly ceiling for everyone (and one for each key, for apps given one).
 //   - every new connection (one Worker request, one Durable Object request): a per-IP and a per-key limit
 //     on new connections, and refusals answered here in the Worker without waking any room.
 //   - time a room is awake: the Hibernation API, no timers in rooms, and an alarm only while a room is busy.
@@ -64,13 +65,13 @@ export default {
     if (!code) return new Response('Room codes are 4 to 48 characters: a to z, 0 to 9 and hyphens.\n', { status: 400, headers: TEXT });
     if (request.headers.get('Upgrade') !== 'websocket') return new Response('This address takes WebSocket connections.\n', { status: 426, headers: TEXT });
 
-    // new connections per IP, then the key
+    // new connections per IP, then the key if there is one
     const ip = request.headers.get('CF-Connecting-IP') || 'local';
     if (env.CONNECTS && !(await env.CONNECTS.limit({ key: ip })).success) return refuse(CLOSE.busy, 'Too many new connections from here. Try again in a minute.');
     const origin = request.headers.get('Origin'), key = url.searchParams.get('key') || '';
     let record = null;
     if (key && KEY.test(key) && env.KEYS) record = await cached('k:' + key, cfg.cacheS, () => env.KEYS.get(key, 'json'));
-    const d = decide(origin, key, record, cfg.house);
+    const d = decide(origin, key, record);
     if (!d.ok) return refuse(d.code, d.why);
     if (key && env.KEY_CONNECTS && !(await env.KEY_CONNECTS.limit({ key: key })).success) return refuse(CLOSE.busy, 'Too many new connections with this key. Try again in a minute.');
 

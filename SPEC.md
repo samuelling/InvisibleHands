@@ -12,7 +12,7 @@ Open a WebSocket to the relay:
 wss://<relay>/room/<code>?app=<slug>&name=<display name>[&key=<key>]
 ```
 
-- `key`: needed by every app outside the editors' own sites. Ask for one on the website (`#key`). A key is tied to the websites it may be used from (the browser's `Origin`), so it can sit in a page. A *native* key also works with no website, for programs; keep those private.
+- `key`: optional, and almost never needed. The editors can give an app a key for an allowance of its own; a key works only from the websites it was issued for (the browser's `Origin`), or, if *native*, from programs.
 
 - `code`: 4 to 48 characters, `a-z 0-9 -`. Whoever starts the room invents it; everyone else is given it.
 - `app`: a short slug for the kind of app (`gaborgrove`, `mega-cv`). `name`: what people see.
@@ -46,10 +46,10 @@ A refused or ended connection closes with one of these codes. Don't retry the fi
 
 | Code | Means | Do |
 |---|---|---|
-| 4001 | No key, or not one of ours | Stop. The app needs a key. |
+| 4001 | A key that isn't one of ours | Stop. Leave the key out. |
 | 4003 | Key switched off, or used from another website | Stop. |
 | 4008 | Kept flooding after being told | Stop. Fix the sending loop. |
-| 4029 | This month's allowance is used (the relay's, or this key's) | Stop until next month. |
+| 4029 | This month's allowance is used (the relay's, or a key's) | Stop until next month. |
 | 4030 | Too many new connections from one place, or the room is full | Wait a minute, then try again. |
 
 Every message the relay passes on carries `from`, the sender's id, set by the relay. It cannot be forged.
@@ -105,8 +105,8 @@ The internet adds delay and jitter, typically 30 to 150 ms.
 | Text fields | 64 characters, control characters removed |
 | Rate | 240 at once, refilling at 120 a second, per connection (each message in a batch counts) |
 | Floods | more than 480 messages dropped for speed within 30 seconds closes the connection (4008) |
-| New connections | 30 a minute from one IP address, 120 a minute with one key |
-| Monthly | a ceiling for the whole relay, and one for each key (2 million frames unless the editors set another) |
+| New connections | 30 a minute from one IP address |
+| Monthly | a ceiling for the whole relay; past it, the relay closes until the 1st |
 
 Unknown message types and unknown fields are dropped. Values that are not numbers are refused.
 

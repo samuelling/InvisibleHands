@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Invisible Hands · docs, step by step</title>
 <meta name="description" content="How to add Invisible Hands to an app, step by step: with Claude, in a web page, in Python, over OSC, or in any language.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23ECEDE9%22/%3E%3Ctext x=%2217%22 y=%2226%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%23F2369B%22%3EH%3C/text%3E%3Ctext x=%2215%22 y=%2224%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%2318181B%22%3EH%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="../brand/ih-mark.svg"><link rel="alternate icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23ECEDE9%22/%3E%3Ctext x=%2217%22 y=%2226%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%23F2369B%22%3EH%3C/text%3E%3Ctext x=%2215%22 y=%2224%22 font-size=%2224%22 text-anchor=%22middle%22 font-family=%22Arial Black,sans-serif%22 fill=%22%2318181B%22%3EH%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&family=Courier+Prime:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@800;900&family=Courier+Prime:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../site/site.css">
 </head>
 <body>
 <header class="wrap mast" style="padding-bottom:20px">
-  <div class="kicker"><a href="../">Invisible Hands</a><span>Docs</span><span>Step by step</span><span class="r"><a href="../">Home</a> · <a href="../console/">Console</a> · <a href="https://github.com/samuelling/InvisibleHands">Source</a></span></div>
-  <h1 class="logo" id="logo" aria-label="How to"><span class="ink">HOW<span class="lc">to</span></span><span class="mis" aria-hidden="true">HOW<span class="lc">to</span></span></h1>
+  <div class="kicker"><a href="../"><svg class="ih-icon" style="width:22px;height:22px;margin:-6px 6px -6px 0;vertical-align:middle;color:var(--toner)" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="ih-flame" cx="17.5" cy="17.5" r="10.6" fill="var(--ih-flame)"/><circle cx="16" cy="16" r="10.6" fill="var(--ih-teal)"/><g class="ih-pointer" transform="rotate(38 16 16)"><path d="M16 16V8.6" stroke="var(--ih-cut)" stroke-width="3" stroke-linecap="round"/></g><path d="M11.14 2.66A14.2 14.2 0 0 1 21.32 2.83M27.49 7.65A14.2 14.2 0 0 1 30.12 17.48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="0.1 3.6"/></svg>Invisible Hands</a><span>Docs</span><span>Step by step</span><span class="r"><a href="../">Home</a> · <a href="../console/">Console</a> · <a href="https://github.com/samuelling/InvisibleHands">Source</a></span></div>
+  <h1 class="logo" id="logo" aria-label="How to"><span class="ink">HOW<span class="lc">TO</span></span><span class="mis" aria-hidden="true">HOW<span class="lc">TO</span></span></h1>
   <p class="lede">Every path, one numbered step at a time. Pick the one that sounds like you and ignore the rest.</p>
 </header>
 
@@ -31,8 +31,7 @@
     <li><a href="#python">Python</a></li>
     <li><a href="#osc">Max, Pd, TouchDesigner (OSC)</a></li>
     <li><a href="#any">Any other language</a></li>
-    <li><a href="#local">Testing without a key</a></li>
-    <li><a href="#key">Getting a key</a></li>
+    <li><a href="#local">Testing on your own computer</a></li>
     <li><a href="#check">Checklist before you ship</a></li>
     <li><a href="#ref">Reference</a></li>
     <li><a href="#trouble">When it doesn’t work</a></li>
@@ -55,16 +54,15 @@
   <tr><td>work in Max, Pd, Live, SuperCollider, TouchDesigner</td><td><a href="#osc">OSC</a></td></tr>
   <tr><td>work in anything else</td><td><a href="#any">Any other language</a></td></tr>
 </table>
-<div class="note">Everything works <b>without a key</b> while you build: run the relay on your own computer (<a href="#local">one command</a>). You need a <a href="#key">key</a> only when your app goes out into the world, unless it lives on one of the editors’ own sites.</div>
+<div class="note">No sign-up and no key. The relay is free; it has a monthly allowance, and if that ever runs out it closes until the 1st. To work offline, run a relay on your own computer (<a href="#local">one command</a>).</div>
 
 <h2 id="claude">With Claude</h2>
 <p class="for">For people who build with Claude (claude.ai, the desktop app, or Claude Code).</p>
 <ol class="steps">
   <li><b>Download the instructions</b><p>Get <a href="../INVISIBLE_HANDS.md" download>INVISIBLE_HANDS.md</a>. It’s written for Claude: what the protocol is, what to expose and what not to, how to map knobs, timing, testing, and what to tell you at the end.</p></li>
   <li><b>Put it where Claude can see it</b><p>In Claude Code: drop it in your project folder. In the Claude app: attach it to the chat, or add it to your project’s files.</p></li>
-  <li><b>Say one sentence</b><div class="codewrap"><pre class="code" id="c-prompt">Read INVISIBLE_HANDS.md and add Invisible Hands to this app.</pre><button class="copy" type="button" data-copy="c-prompt">Copy</button></div><p>If you have a key already, add it: “My key is ih_…”. If you know which knobs you want, say so. Otherwise Claude suggests a list and asks.</p></li>
+  <li><b>Say one sentence</b><div class="codewrap"><pre class="code" id="c-prompt">Read INVISIBLE_HANDS.md and add Invisible Hands to this app.</pre><button class="copy" type="button" data-copy="c-prompt">Copy</button></div><p>If you know which knobs you want, say so. Otherwise Claude suggests a list and asks.</p></li>
   <li><b>Test with the link it gives you</b><p>Claude finishes with two links: your app with <code>?room=…</code>, and the <a href="../console/">console</a> in the same room. Open both. Drag a slider in the console and your app should move.</p></li>
-  <li><b>Ask for a key, paste it in</b><p>When it works, <a href="#key">ask for a key</a>, then tell Claude: “Use the key ih_…”.</p></li>
 </ol>
 
 <h2 id="web">A web app that can be moved</h2>
@@ -80,7 +78,6 @@
     <div class="codewrap"><pre class="code" id="w4">const hands = InvisibleHands.create({
   app: 'my-app',               <span class="c">// a short name for this kind of app</span>
   name: 'My App',              <span class="c">// what people see</span>
-  key: 'ih_…',                 <span class="c">// your key (step 7); leave out while testing locally</span>
   params: [
     { id: 'speed', label: 'Speed',
       get: () =&gt; Math.log(state.speed / 0.1) / Math.log(100),
@@ -96,8 +93,10 @@
     <div class="codewrap"><pre class="code" id="w5">document.querySelector('#settings').append(hands.panel());</pre><button class="copy" type="button" data-copy="w5">Copy</button></div>
     <p>The panel has <b>Start a room</b>, a box to type a code, <b>Copy invite link</b>, <b>Leave</b>, and the <b>Let others move my controls</b> switch. It takes your page’s font and colours. Put it in your settings, or behind a small “Hands” button.</p>
     <p>If your app has its own slider for a knob, call <code>hands.recenter('speed')</code> when the person drags it, so a running swing follows their hand.</p></li>
-  <li><b>Test it</b><p>Follow <a href="#local">Testing without a key</a>. Open your app and the console in the same room; every knob should move your app, and your own sliders should follow.</p></li>
-  <li><b>Get a key</b><p>See <a href="#key">Getting a key</a>. Paste it into <code>create({ key })</code>. A website key is tied to your site’s address, so it’s fine in the page’s code.</p></li>
+  <li><b>Pin the mark on your knobs</b><p>Next to each control you offered, put the <a href="../brand/">Invisible Hands mark</a>. It goes grey when nobody’s linked, lights up when they are, follows the value, and jumps when someone else moves it, so people know why a slider moved by itself.</p>
+    <div class="codewrap"><pre class="code" id="w6">document.querySelector('#speed-label').append(hands.tag('speed'));
+toolbar.append(hands.badge());     <span class="c">// optional: a button with the mark that opens the panel</span></pre><button class="copy" type="button" data-copy="w6">Copy</button></div></li>
+  <li><b>Test it</b><p>Open the <a href="../console/">console</a> with the same <code>?room=</code> as your app (or follow <a href="#local">Testing on your own computer</a>). Open your app and the console in the same room; every knob should move your app, and your own sliders should follow.</p></li>
   <li><b>Ship it</b><p>Share invite links: your app’s address plus <code>?room=</code> and a code. A page opened that way joins the room by itself. The panel’s <b>Copy invite link</b> makes one for you.</p></li>
 </ol>
 
@@ -114,8 +113,9 @@ const count = (v, lo, hi) =&gt; Math.round(lin(v, lo, hi));</pre><button class="
 
 <h2 id="source">A web app that moves others</h2>
 <p class="for">For LFOs, sequencers, sensors, mod matrices: things that do the turning.</p>
+<div class="note">You may not need to write one. To wire two apps together directly, use the patch matrix in the <a href="../console/">console</a>. For serious modulation, use <a href="https://crumplabsandbox.github.io/mega-cv/">MEGA·CV</a>, the best modulator for Invisible Hands: its Hands module sends any signal to any knob in the room.</div>
 <ol class="steps">
-  <li><b>Create hands with no knobs</b><div class="codewrap"><pre class="code" id="s1">const hands = InvisibleHands.create({ app: 'my-lfo', name: 'My LFO', key: 'ih_…' });
+  <li><b>Create hands with no knobs</b><div class="codewrap"><pre class="code" id="s1">const hands = InvisibleHands.create({ app: 'my-lfo', name: 'My LFO' });
 hands.join('moss-kiln-opal-fern-42');   <span class="c">// or let a ?room= link join it, or show hands.panel()</span></pre><button class="copy" type="button" data-copy="s1">Copy</button></div></li>
   <li><b>Listen for who’s there</b><div class="codewrap"><pre class="code" id="s2">hands.on('peers', peers =&gt; {
   <span class="c">// each peer: { id, app, name, params: [{id, label, kind, value}], outs: [{id, label}], state: {} }</span>
@@ -136,7 +136,7 @@ hands.ramp('app:gaborgrove', 'burst', [[5, 1], [400, 0]], hands.serverNow() + 80
 <ol class="steps">
   <li><b>List them</b><div class="codewrap"><pre class="code" id="o1">InvisibleHands.create({ …, outs: [{ id: 'level', label: 'Level', get: () =&gt; meter.level }] });</pre><button class="copy" type="button" data-copy="o1">Copy</button></div><p>Each returns 0 to 1. The library reads them a few times a second and sends only what changed.</p></li>
   <li><b>Read other apps’ outputs</b><div class="codewrap"><pre class="code" id="o2">hands.on('state', peer =&gt; { useAsModulation(peer.state.level); });</pre><button class="copy" type="button" data-copy="o2">Copy</button></div></li>
-  <li><b>Patch</b><p>Listening to one app’s output and sending it to another app’s knob as a <code>mod</code> is a patch cable. <a href="../#patch-demo">Demo 2</a> does exactly that.</p></li>
+  <li><b>Patch</b><p>Listening to one app’s output and sending it to another app’s knob as a <code>mod</code> is a patch cable. <a href="../#patch-demo">Demo 2</a> does exactly that. The <a href="../console/">console’s patch matrix</a> does it for any two apps in a room, and MEGA·CV does it with a whole synthesizer.</p></li>
 </ol>
 
 <h2 id="python">Python</h2>
@@ -146,12 +146,11 @@ hands.ramp('app:gaborgrove', 'burst', [[5, 1], [400, 0]], hands.serverNow() + 80
 curl -O https://samuelling.github.io/InvisibleHands/python/invisible_hands.py</pre><button class="copy" type="button" data-copy="p1">Copy</button></div></li>
   <li><b>Try it from the command line</b><div class="codewrap"><pre class="code" id="p2">python invisible_hands.py peers  moss-kiln-opal-fern-42                     <span class="c"># who's there</span>
 python invisible_hands.py lfo    moss-kiln-opal-fern-42 app:gaborgrove spread --rate 0.3
-python invisible_hands.py listen moss-kiln-opal-fern-42                     <span class="c"># everyone's outputs</span></pre><button class="copy" type="button" data-copy="p2">Copy</button></div><p>Use <code>--relay ws://localhost:8787</code> while testing locally, or <code>--key ih_…</code> (or <code>INVISIBLE_HANDS_KEY</code>) for the real relay.</p></li>
-  <li><b>Be moved</b><div class="codewrap"><pre class="code" id="p3">import os
-from invisible_hands import Hands
+python invisible_hands.py listen moss-kiln-opal-fern-42                     <span class="c"># everyone's outputs</span></pre><button class="copy" type="button" data-copy="p2">Copy</button></div><p>Add <code>--relay ws://localhost:8787</code> to use a relay on your own computer.</p></li>
+  <li><b>Be moved</b><div class="codewrap"><pre class="code" id="p3">from invisible_hands import Hands
 
 state = {'speed': 0.5}
-hands = Hands(app='my-tool', name='My Tool', key=os.environ.get('INVISIBLE_HANDS_KEY'))
+hands = Hands(app='my-tool', name='My Tool')
 hands.param('speed', 'Speed', get=lambda: state['speed'], set=lambda v: state.update(speed=v))
 hands.out('level', 'Level', get=lambda: 0.3)
 print('room:', hands.start())        <span class="c"># a new room; or hands.start('moss-kiln-opal-fern-42')</span></pre><button class="copy" type="button" data-copy="p3">Copy</button></div></li>
@@ -159,7 +158,6 @@ print('room:', hands.start())        <span class="c"># a new room; or hands.star
 hands.mod('app:gaborgrove', 'spread', 0.2)
 hands.ramp('app:gaborgrove', 'burst', [(5, 1), (400, 0)], at=hands.server_now() + 80)</pre><button class="copy" type="button" data-copy="p4">Copy</button></div></li>
   <li><b>Pick how it runs</b><p><code>start()</code> runs in a background thread and calls your <code>set</code> from it. In a single-threaded host (Blender, TouchDesigner, pygame) use <code>start(code, poll=True)</code> and call <code>hands.poll()</code> every frame, so moves happen on your thread. In asyncio, <code>await hands.run(code)</code>.</p></li>
-  <li><b>Get a native key</b><p>A program isn’t a website, so it needs a <b>native</b> key. Keep it in an environment variable, never in public code. <a href="#key">Ask for one</a>.</p></li>
 </ol>
 
 <h2 id="osc">Max, Pd, TouchDesigner, Live, SuperCollider (OSC)</h2>
@@ -167,7 +165,7 @@ hands.ramp('app:gaborgrove', 'burst', [(5, 1), (400, 0)], at=hands.server_now() 
 <ol class="steps">
   <li><b>Install the bridge</b><div class="codewrap"><pre class="code" id="b1">pip install websockets python-osc
 curl -O https://samuelling.github.io/InvisibleHands/python/invisible_hands.py</pre><button class="copy" type="button" data-copy="b1">Copy</button></div></li>
-  <li><b>Start it in a room, naming your knobs</b><div class="codewrap"><pre class="code" id="b2">python invisible_hands.py --key ih_… osc moss-kiln-opal-fern-42 --param cutoff --param warp</pre><button class="copy" type="button" data-copy="b2">Copy</button></div><p>It listens for OSC on UDP 9000 and sends to 127.0.0.1:9001 (change with <code>--listen</code>, <code>--host</code>, <code>--port</code>).</p></li>
+  <li><b>Start it in a room, naming your knobs</b><div class="codewrap"><pre class="code" id="b2">python invisible_hands.py osc moss-kiln-opal-fern-42 --param cutoff --param warp</pre><button class="copy" type="button" data-copy="b2">Copy</button></div><p>It listens for OSC on UDP 9000 and sends to 127.0.0.1:9001 (change with <code>--listen</code>, <code>--host</code>, <code>--port</code>).</p></li>
   <li><b>Send moves into the room</b>
     <table><tr><th>Send this OSC</th><th>to do</th></tr>
     <tr><td><code>/hands/set/app:gaborgrove/spread 0.7</code></td><td>put it at 0.7</td></tr>
@@ -183,15 +181,15 @@ curl -O https://samuelling.github.io/InvisibleHands/python/invisible_hands.py</p
 <p class="for">Swift, Kotlin, Go, Rust, C++, Lua: if it can open a WebSocket and read JSON, it can join.</p>
 <ol class="steps">
   <li><b>Read the one-page protocol</b><p><a href="../SPEC.md">SPEC.md</a> has every message. <a href="../GUIDE.md">GUIDE.md</a> has a whole conversation written out line by line, a Go example and a Swift sketch.</p></li>
-  <li><b>Connect</b><p><code>wss://invisible-hands.samuelling.workers.dev/room/&lt;code&gt;?app=&lt;slug&gt;&amp;name=&lt;name&gt;&amp;key=&lt;key&gt;</code></p></li>
+  <li><b>Connect</b><p><code>wss://invisible-hands.samuelling.workers.dev/room/&lt;code&gt;?app=&lt;slug&gt;&amp;name=&lt;name&gt;</code></p></li>
   <li><b>Say what you have</b><p>On <code>welcome</code>, send <code>{"t":"describe","params":[…],"outs":[…]}</code>. On every <code>join</code>, send it again to the newcomer (<code>"to": "&lt;their id&gt;"</code>).</p></li>
   <li><b>Do what you’re told</b><p><code>set</code>: clamp to 0..1, apply. <code>mod</code>: clamp to −1..1, apply around where the control stood when the swing began. <code>ramp</code>: play the points on your own clock. Ignore controls you don’t have.</p></li>
   <li><b>Publish, sparingly</b><p>Send <code>state</code> at most 15 times a second, only for outputs that moved, and everything once when someone joins. Ping three times at the start, then every five minutes.</p></li>
-  <li><b>Take no for an answer</b><p>If the relay closes with 4001, 4003, 4008 or 4029, stop and show the reason it sent. Don’t retry. After 4030 wait a minute. <a href="#closes">The codes.</a></p></li>
+  <li><b>Take no for an answer</b><p>If the relay closes with 4008 or 4029 (or 4001/4003, about a key), stop and show the reason it sent. Don’t retry. After 4030 wait a minute. <a href="#closes">The codes.</a></p></li>
 </ol>
 
-<h2 id="local">Testing without a key</h2>
-<p class="for">A relay on your own computer: no key, no limits, no internet.</p>
+<h2 id="local">Testing on your own computer</h2>
+<p class="for">A relay on your own computer: no limits, no internet.</p>
 <ol class="steps">
   <li><b>Get the kit</b><p><a href="../invisible-hands-kit.zip" download>Download the kit</a> and unzip it, or clone <a href="https://github.com/samuelling/InvisibleHands">the repository</a>. You need Node 18 or newer.</p></li>
   <li><b>Start the relay</b><div class="codewrap"><pre class="code" id="l2">cd invisible-hands/relay
@@ -200,50 +198,39 @@ npm run dev                  <span class="c"># → ws://localhost:8787</span></p
   <li><b>Point your app and the console at it</b><p>Add <code>?relay=ws://localhost:8787&amp;room=test-room</code> to your app’s address, and open <code>…/console/?relay=ws://localhost:8787&amp;room=test-room</code> from the kit (serve the folder with <code>python3 -m http.server</code>). Same room, same relay: they find each other.</p></li>
 </ol>
 
-<h2 id="key">Getting a key</h2>
-<p class="for">Once, before your app goes public. Free.</p>
-<ol class="steps">
-  <li><b>Know what you’ll tell us</b><div class="codewrap"><pre class="code" id="k1">Invisible Hands key, please
-App: (its name)
-Where it lives: (https://… — the exact website, or "a program" for a native key)
-What it moves or listens to: (a sentence)
-Roughly how much: (a few people now and then / a performance / always on)</pre><button class="copy" type="button" data-copy="k1">Copy</button></div></li>
-  <li><b>Send it</b><p>With the <a href="https://megazine.org/contact/?about=hands-key">megaZINE finger-gun form</a> (no account; shoot the right squares, then paste the above), or on <a href="https://samuelling.github.io/BBS/">the BBS</a>: post in <b>megaZINE Submissions</b> with the title “Invisible Hands key”.</p></li>
-  <li><b>Get it back</b><p>A person reads it and replies with a key (<code>ih_</code> and 20 letters and digits), by e-mail or BBS mail. Website keys work only from the address you gave. Native keys work from programs: keep those private.</p></li>
-  <li><b>Mind the allowance</b><p>A key gets 2 million frames a month unless we agree on more. A frame is one bundle of moves; the libraries bundle for you. If you hit the ceiling, the relay closes your connections with code 4029 until the 1st. Write to us if you need more.</p></li>
-</ol>
-<div class="note">Apps on the editors’ own sites (<code>samuelling.github.io</code>, <code>crumplabsandbox.github.io</code>, <code>megazine.org</code>) don’t need a key.</div>
-
 <h2 id="check">Checklist before you ship</h2>
 <ul class="check">
   <li>Every exposed knob moves the app, and the app’s own controls follow.</li>
   <li><code>get</code> and <code>set</code> are exact opposites (the console shows the right starting positions).</li>
   <li>The panel (or your own UI) shows when it’s linked, and the “let others move my controls” switch works at once.</li>
+  <li>Every control you offered carries the mark (<code>hands.tag</code>), and no other control does.</li>
   <li>Nothing exposed deletes, saves, buys, records, leaves the page, or strobes.</li>
   <li>Names and labels from other apps are shown as text, not HTML.</li>
   <li>A source sends from one timer, at most 25 times a second, and uses <code>ramp</code> for sharp shapes.</li>
   <li>When the console leaves, or the Wi-Fi drops, the app carries on and reconnects.</li>
-  <li>The key is in, and a native key isn’t in public code.</li>
 </ul>
 
 <h2 id="ref">Reference</h2>
 <h3>JavaScript</h3>
 <table>
   <tr><th>Call</th><th>Does</th></tr>
-  <tr><td><code>InvisibleHands.create(opts)</code></td><td><code>app</code>, <code>name</code>, <code>key</code>, <code>params</code>, <code>outs</code>, <code>relay</code>, <code>stateHz</code> (15), <code>autoJoin</code> (true: join <code>?room=</code>).</td></tr>
+  <tr><td><code>InvisibleHands.create(opts)</code></td><td><code>app</code>, <code>name</code>, <code>params</code>, <code>outs</code>, <code>relay</code>, <code>stateHz</code> (15), <code>autoJoin</code> (true: join <code>?room=</code>).</td></tr>
   <tr><td><code>hands.panel()</code></td><td>The built-in panel element.</td></tr>
   <tr><td><code>hands.join(code)</code> · <code>newRoom()</code> · <code>leave()</code></td><td>Rooms. <code>InvisibleHands.makeCode()</code> invents a code.</td></tr>
   <tr><td><code>hands.set(to, id, v)</code> · <code>mod</code> · <code>ramp(to, id, pts, at)</code></td><td>Move someone. <code>to</code>: peer, peer id, <code>'app:&lt;slug&gt;'</code> or <code>null</code>.</td></tr>
   <tr><td><code>hands.on(event, fn)</code></td><td><code>peers</code>, <code>state</code>, <code>status</code>, <code>in</code>, <code>error</code>. Returns a function that unsubscribes.</td></tr>
   <tr><td><code>hands.status</code> · <code>error</code> · <code>room</code> · <code>peers</code> · <code>latency</code></td><td>Where things stand. <code>status</code>: <code>off</code>, <code>connecting</code>, <code>on</code>, <code>retrying</code>, <code>error</code>.</td></tr>
   <tr><td><code>hands.allow = false</code></td><td>Nobody else can move this app.</td></tr>
+  <tr><td><code>hands.tag(id)</code></td><td>The mark, sized to the text, to put beside a control. Keeps itself up to date.</td></tr>
+  <tr><td><code>hands.badge()</code></td><td>A button with the mark and the number of others in the room; opens the panel.</td></tr>
+  <tr><td><code>InvisibleHands.icon({ size, mini })</code></td><td>The mark on its own, as an SVG element.</td></tr>
   <tr><td><code>hands.recenter(id)</code></td><td>The person moved a knob by hand; swings now centre on it.</td></tr>
   <tr><td><code>hands.describe()</code></td><td>Say your controls again (after changing the list).</td></tr>
   <tr><td><code>hands.serverNow()</code> · <code>sync()</code></td><td>The relay’s clock, for <code>ramp</code>’s <code>at</code>.</td></tr>
   <tr><td><code>hands.inviteUrl()</code></td><td>This page’s address with <code>?room=</code>.</td></tr>
 </table>
 <h3>Python</h3>
-<p><code>Hands(app, name, relay=None, key=None, state_hz=15, allow=True)</code> · <code>.param(id, label, get, set, kind='cont', mod=None)</code> · <code>.out(id, label, get)</code> · <code>.start(code=None, poll=False)</code> · <code>.poll()</code> · <code>await .run(code)</code> · <code>.wait_linked()</code> · <code>.set/.mod/.ramp</code> · <code>.on(event, fn)</code> · <code>.recenter(id)</code> · <code>.server_now()</code> · <code>.leave()</code> · <code>.status</code>, <code>.error</code>, <code>.peers</code>.</p>
+<p><code>Hands(app, name, relay=None, state_hz=15, allow=True)</code> · <code>.param(id, label, get, set, kind='cont', mod=None)</code> · <code>.out(id, label, get)</code> · <code>.start(code=None, poll=False)</code> · <code>.poll()</code> · <code>await .run(code)</code> · <code>.wait_linked()</code> · <code>.set/.mod/.ramp</code> · <code>.on(event, fn)</code> · <code>.recenter(id)</code> · <code>.server_now()</code> · <code>.leave()</code> · <code>.status</code>, <code>.error</code>, <code>.peers</code>.</p>
 <h3>Messages</h3>
 <table>
   <tr><th>t</th><th>body</th><th>meaning</th></tr>
@@ -258,20 +245,18 @@ Roughly how much: (a few people now and then / a performance / always on)</pre><
 <h3 id="closes">When the relay says no</h3>
 <table>
   <tr><th>Close code</th><th>means</th><th>do</th></tr>
-  <tr><td>4001</td><td>no key, or an unknown one</td><td>stop; get a key</td></tr>
-  <tr><td>4003</td><td>key switched off, or used from another website</td><td>stop</td></tr>
+  <tr><td>4001 / 4003</td><td>a key the relay doesn’t accept (keys are optional and rare)</td><td>stop; leave the key out</td></tr>
   <tr><td>4008</td><td>kept flooding after being told</td><td>stop; fix the send loop</td></tr>
-  <tr><td>4029</td><td>this month’s allowance is used (the relay’s, or your key’s)</td><td>stop until the 1st</td></tr>
+  <tr><td>4029</td><td>the relay’s monthly allowance is used up</td><td>stop until the 1st</td></tr>
   <tr><td>4030</td><td>too many new connections at once, or the room is full</td><td>wait a minute</td></tr>
 </table>
 <h3>Limits</h3>
-<p>16 apps a room · 128 knobs and 64 outputs an app · 32 KB a message · 32 points a ramp · labels 64 characters · 240 messages at once, refilling at 120 a second · 30 new connections a minute per address · 2 million frames a month per key.</p>
+<p>16 apps a room · 128 knobs and 64 outputs an app · 32 KB a message · 32 points a ramp · labels 64 characters · 240 messages at once, refilling at 120 a second · 30 new connections a minute per address · one monthly allowance for the whole relay.</p>
 
 <h2 id="trouble">When it doesn’t work</h2>
 <table>
   <tr><th>You see</th><th>Try</th></tr>
-  <tr><td>“This app needs a key”</td><td>You’re on the real relay from a site that isn’t ours. <a href="#local">Test locally</a> or <a href="#key">get a key</a>.</td></tr>
-  <tr><td>“That key is for a different website”</td><td>The address doesn’t match what the key was issued for (<code>www.</code>, <code>http</code> vs <code>https</code>, a different port). Ask us to add the address.</td></tr>
+  <tr><td>“…allowance for this month”</td><td>The relay is resting until the 1st. A relay on <a href="#local">your own computer</a> still works.</td></tr>
   <tr><td>Linked, but the other app isn’t there</td><td>Check both use exactly the same room code and the same relay (<code>?relay=</code>).</td></tr>
   <tr><td>Knobs show in the console but don’t move the app</td><td>The <b>Let others move my controls</b> switch is off, or <code>set</code> writes somewhere the app doesn’t read.</td></tr>
   <tr><td>The console’s sliders start in the wrong place</td><td><code>get</code> isn’t the exact opposite of <code>set</code>.</td></tr>
@@ -288,8 +273,8 @@ Roughly how much: (a few people now and then / a performance / always on)</pre><
 npm install
 npx wrangler login
 npx wrangler kv namespace create invisible-hands-keys     <span class="c"># put the id it prints in wrangler.toml</span>
-npx wrangler secret put ADMIN_TOKEN                        <span class="c"># a passphrase for issuing keys</span>
-npx wrangler deploy</pre><button class="copy" type="button" data-copy="r2">Copy</button></div><p>Change <code>HOUSE_ORIGINS</code> and the ceilings in <code>wrangler.toml</code> to suit you.</p></li>
+npx wrangler secret put ADMIN_TOKEN                        <span class="c"># a passphrase for the usage page</span>
+npx wrangler deploy</pre><button class="copy" type="button" data-copy="r2">Copy</button></div><p>Change the monthly ceiling in <code>wrangler.toml</code> to suit you.</p></li>
   <li><b>Point apps at it</b><p><code>create({ relay: 'wss://your-relay.workers.dev' })</code>, or <code>?relay=</code> in any app’s address.</p></li>
 </ol>
 

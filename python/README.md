@@ -3,14 +3,13 @@
 One file, `invisible_hands.py`. Needs `pip install websockets` (and `pip install python-osc` for the OSC bridge). Python 3.9 or newer.
 
 ```python
-import os
 from invisible_hands import Hands
 
 speed = 0.5
 def set_speed(v):
     global speed; speed = v
 
-hands = Hands(app='my-tool', name='My Tool', key=os.environ.get('INVISIBLE_HANDS_KEY'))   # a native key from the editors
+hands = Hands(app='my-tool', name='My Tool')
 hands.param('speed', 'Speed', get=lambda: speed, set=set_speed)   # others can move it (0..1)
 hands.out('level', 'Level', get=lambda: 0.3)                      # others can listen to it (0..1)
 code = hands.start()                                              # a new room; or hands.start('moss-kiln-opal-fern-42')
@@ -25,11 +24,11 @@ hands.mod('app:gaborgrove', 'spread', 0.2)                        # move someone
 - `await hands.run(code)` inside an asyncio program.
 - `hands.on('peers' | 'state' | 'status' | 'in' | 'error', fn)`, `hands.peers`, `hands.allow = False`, `hands.recenter(id)`, `hands.server_now()`, `hands.leave()`.
 
-`hands.status` is `'error'` (and `hands.error` says why) if the relay refuses: no key, a website key used from a program, or the month's allowance used up. It doesn't retry those.
+`hands.status` is `'error'` (and `hands.error` says why) if the relay refuses, for instance when its monthly allowance is used up. It doesn't retry those.
 
 ## Command line
 
-All commands take `--key` (or read `INVISIBLE_HANDS_KEY`). Get a native key on the website.
+No key is needed. (`--key` exists for the rare app the editors gave one.)
 
 ```
 python invisible_hands.py peers  <room>                          who's there, and their controls

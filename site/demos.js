@@ -59,12 +59,12 @@
   var B = { size: 0.55, wobble: 0.35, mis: 0.3, grain: 0.45, spin: 0.25 };
   var BP = [['size', 'Size'], ['wobble', 'Wobble'], ['mis', 'Misregister'], ['grain', 'Grain'], ['spin', 'Spin']];
   var splat = 0, splatHigh = false, spinA = 0, breath = 0.5, blotHands = null;
-  var own = {};
+  var own = {}, ownName = {}, ownTags = [];
   BP.forEach(function (p) {
     var row = el('div', 'ctl'), n = el('span', 'n', p[1]), s = el('input');
     s.type = 'range'; s.min = 0; s.max = 1000; s.value = Math.round(B[p[0]] * 1000); s.setAttribute('aria-label', 'Blot ' + p[1]);
     s.addEventListener('input', function () { B[p[0]] = s.value / 1000; if (blotHands) blotHands.recenter(p[0]); poke(); });
-    row.append(n, s); $('own').appendChild(row); own[p[0]] = s;
+    row.append(n, s); $('own').appendChild(row); own[p[0]] = s; ownName[p[0]] = n;
   });
   $('allow').addEventListener('change', function () { if (blotHands) blotHands.allow = $('allow').checked; });
 
@@ -94,8 +94,8 @@
       }
       g.fill();
     }
-    layer(css('--blue'), 0.26, 0, 0, 0);
-    layer(css('--pink'), 1.31, B.mis * 0.09 * W, B.mis * 0.06 * H, 1.7);
+    layer(css('--teal'), 0.26, 0, 0, 0);
+    layer(css('--flame'), 1.31, B.mis * 0.09 * W, B.mis * 0.06 * H, 1.7);
     g.globalCompositeOperation = 'source-over';
     breath = 0.5 + 0.5 * Math.sin(t * 1.1);
     BP.forEach(function (p) { var s = own[p[0]]; if (document.activeElement !== s) s.value = Math.round(B[p[0]] * 1000); });
@@ -122,8 +122,8 @@
       g.beginPath(); g.arc(bx + ox, by + oy, H * 0.07, 0, 6.2832); g.fill();
     }
     g.globalCompositeOperation = dark() ? 'screen' : 'multiply';
-    draw(P.ink > 0.5 ? css('--pink') : css('--blue'), 0, 0);
-    draw(P.ink > 0.5 ? css('--blue') : css('--pink'), 4 * d, 3 * d);
+    draw(P.ink > 0.5 ? css('--flame') : css('--teal'), 0, 0);
+    draw(P.ink > 0.5 ? css('--teal') : css('--flame'), 4 * d, 3 * d);
     g.globalCompositeOperation = 'source-over';
     g.fillStyle = css('--toner'); g.fillRect(px - 40 * d, py - 3 * d, 80 * d, 6 * d);
     g.fillStyle = css('--muted'); g.font = '700 ' + 11 * d + 'px "Courier Prime", monospace';
@@ -228,6 +228,8 @@
       outs: [{ id: 'breath', label: 'Breath', get: function () { return breath; } }]
     }));
     blotHands.allow = $('allow').checked;
+    // the Invisible Hands mark, tacked onto each of the Blot's own sliders
+    BP.forEach(function (p) { var t = blotHands.tag(p[0]); ownName[p[0]].appendChild(t); ownTags.push(t); });
     blotHands.on('in', function () { var c = $('blot-clip'), now = performance.now(); if (now - flashT > 250) { flashT = now; c.classList.add('hit'); setTimeout(function () { c.classList.remove('hit'); }, 120); } });
     pendHands = InvisibleHands.create(Object.assign({}, base, {
       app: 'pendulum', name: 'The Pendulum', stateHz: 6,
@@ -247,6 +249,7 @@
   function unplug(why) {
     clearInterval(tickTimer); swings.clear();
     [blotHands, pendHands, hand].forEach(function (h) { if (h) h.leave(); });
+    ownTags.forEach(function (t) { t.remove(); }); ownTags = [];
     blotHands = pendHands = hand = null; room = why ? false : null;
     $('qr').innerHTML = '<svg viewBox="0 0 10 10"><rect width="10" height="10" fill="#fff"/><text x="5" y="5.6" font-size="1.3" text-anchor="middle" font-family="Courier Prime, monospace" fill="#18181B">plug in first</text></svg>';
     $('phone-link').textContent = ''; $('copy-phone').disabled = true;
@@ -304,8 +307,8 @@
       g.beginPath(); for (var t = 0; t <= shown; t += 2) { var v = f(t); if (t === 0) g.moveTo(X(t), Y(v)); else g.lineTo(X(t), Y(v)); } g.stroke(); g.setLineDash([]);
     }
     curve(css('--muted'), 1.5, [5, 4], sim.e);
-    curve(css('--pink'), 3, [], function (t) { var v = 0; for (var i = 0; i < sim.arrivals.length && sim.arrivals[i][0] <= t; i++) v = sim.arrivals[i][1]; return v; });
-    curve(css('--blue'), 3, [], function (t) { return sim.e(t - (sim.rampAt - 100)); });
+    curve(css('--flame'), 3, [], function (t) { var v = 0; for (var i = 0; i < sim.arrivals.length && sim.arrivals[i][0] <= t; i++) v = sim.arrivals[i][1]; return v; });
+    curve(css('--teal'), 3, [], function (t) { return sim.e(t - (sim.rampAt - 100)); });
   }
   $('jit').addEventListener('input', function () { $('jit-o').textContent = Math.round($('jit').value * 2) + ' ms'; });
   $('jit-o').textContent = Math.round($('jit').value * 2) + ' ms';
@@ -329,7 +332,7 @@
 
   // ---------------------------------------------------------------- is the relay open this month?
   fetch('https://invisible-hands.samuelling.workers.dev/status').then(function (r) { return r.json(); }).then(function (s) {
-    $('relay-open').textContent = s.open ? 'The relay is open this month.' : 'The relay has used this month’s allowance; it opens again on the 1st.';
+    $('relay-open').textContent = s.open ? 'Right now: open.' : 'Right now: closed until the 1st.';
   }).catch(function () {});
   status();
 })();

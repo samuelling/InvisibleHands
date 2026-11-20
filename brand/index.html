@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Invisible Hands · the mark</title>
+<meta name="description" content="The Invisible Hands mark: a knob turned by a hand you can't see. How to tack it onto the controls in your app.">
+<link rel="icon" href="ih-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@800;900&family=Courier+Prime:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../site/site.css">
+<style>
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); gap: 18px; }
+.sw { border: 1px solid var(--rule); background: var(--sheet); }
+.sw i { display: block; height: 90px; }
+.sw p { margin: 0; padding: 8px 10px; font: 400 .8rem/1.4 var(--type); }
+.sw b { font: 900 1.2rem var(--display); text-transform: uppercase; display: block; }
+.sizes { display: flex; flex-wrap: wrap; align-items: end; gap: 26px; padding: 10px 0; }
+.sizes figure { margin: 0; display: grid; justify-items: center; gap: 6px; font: 400 .74rem var(--type); color: var(--muted); }
+.mock { background: var(--sheet); border: 1px solid var(--rule); padding: 16px; display: grid; gap: 10px; max-width: 460px; font-family: system-ui, sans-serif; }
+.mock label { display: grid; grid-template-columns: 110px 1fr; gap: 10px; align-items: center; font-size: .92rem; }
+.mock input { width: 100%; accent-color: #555; }
+.mock .bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--rule); padding-bottom: 8px; font-weight: 600; }
+.dl { display: flex; flex-wrap: wrap; gap: 10px; }
+.do li::marker { color: var(--teal); } .dont li::marker { color: var(--flame); }
+@media (prefers-color-scheme: dark) { .sizes img[src*="mono"] { filter: invert(1); } .big-lockup, .sizes img { background: #F2EFE6; border-radius: 6px; } }
+.big-lockup { width: min(100%, 640px); height: auto; display: block; margin: 8px 0; }
+</style>
+</head>
+<body>
+<header class="wrap mast" style="padding-bottom:20px">
+  <div class="kicker"><a href="../">Invisible Hands</a><span>The mark</span><span class="r"><a href="../docs/">Docs</a> · <a href="../console/">Console</a></span></div>
+  <div class="brandrow"><picture><source srcset="ih-mark-dark.svg" media="(prefers-color-scheme: dark)"><img src="ih-mark.svg" alt="" style="width:clamp(70px,12vw,140px);display:block"></picture><h1 class="logo" id="logo" aria-label="The mark"><span class="ink">THE<span class="lc">MARK</span></span><span class="mis" aria-hidden="true">THE<span class="lc">MARK</span></span></h1></div>
+  <p class="lede">A knob, already turned, and the fingertips of a hand you can’t see. Pin it next to any control that someone else can move.</p>
+</header>
+<main class="wrap">
+  <div class="sect"><h2><span class="num">Why it’s there</span>A little warning label</h2><p>When a slider moves by itself, people should know why.</p></div>
+  <div class="board two">
+    <article class="clip" style="--tilt:-.4deg">
+      <p>The mark sits beside every control an app has offered to the room. It tells the person three things at a glance:</p>
+      <ul class="small" style="margin:8px 0 0;padding-left:1.2em;display:grid;gap:4px">
+        <li><b>Grey</b>: this could be moved remotely, but nobody’s linked.</li>
+        <li><b>Coloured</b>: linked. <b>Full strength</b>: others are in the room.</li>
+        <li><b>The orange ink jumps</b> each time someone else moves it. The pointer follows the value.</li>
+      </ul>
+      <p class="small" style="margin-top:10px">Hover it and it says “Others can move this, over Invisible Hands”.</p>
+    </article>
+    <article class="clip" style="--tilt:.5deg;--tape:4deg">
+      <span class="kind">Live: try “Wiggle”</span>
+      <div class="mock" id="mock">
+        <div class="bar"><span>Some app</span><span id="badge-slot"></span></div>
+        <label><span>Speed <span id="t1"></span></span><input type="range" id="m1" min="0" max="1" step="0.001" value="0.4"></label>
+        <label><span>Colour <span id="t2"></span></span><input type="range" id="m2" min="0" max="1" step="0.001" value="0.7"></label>
+        <label><span>Volume</span><input type="range" min="0" max="1" step="0.001" value="0.5"></label>
+      </div>
+      <p class="small">Speed and Colour are offered to the room, so they carry the mark. Volume isn’t, so it doesn’t. <button class="btn small" id="wiggle" type="button">Wiggle</button></p>
+    </article>
+  </div>
+
+  <div class="sect"><h2><span class="num">Tack it on</span>Two lines</h2></div>
+  <div class="board two">
+    <article class="clip">
+      <span class="kind">Next to each control</span>
+      <div class="codewrap"><pre class="code" id="c1">speedLabel.append(hands.tag('speed'));
+colourLabel.append(hands.tag('colour'));</pre><button class="copy" type="button" data-copy="c1">Copy</button></div>
+      <p class="small"><code>hands.tag(id)</code> returns a small SVG, 1.05 em square, that keeps itself up to date. Put it right after the control’s label.</p>
+    </article>
+    <article class="clip">
+      <span class="kind">In a toolbar</span>
+      <div class="codewrap"><pre class="code" id="c2">toolbar.append(hands.badge());</pre><button class="copy" type="button" data-copy="c2">Copy</button></div>
+      <p class="small"><code>hands.badge()</code> is a button with the mark and “Hands · 2”. Clicking it opens the panel (rooms, invite link, the off switch). Or draw the mark yourself with <code>InvisibleHands.icon({ size: 24 })</code>.</p>
+    </article>
+  </div>
+
+  <div class="sect"><h2><span class="num">The parts</span>Mark, words, inks</h2></div>
+  <article class="clip">
+    <img class="big-lockup" src="ih-lockup.svg" alt="Invisible Hands">
+    <div class="sizes">
+      <figure><img src="ih-mark.svg" alt="" width="96" height="96">96</figure>
+      <figure><img src="ih-mark.svg" alt="" width="48" height="48">48</figure>
+      <figure><img src="ih-mark.svg" alt="" width="24" height="24">24</figure>
+      <figure><img src="ih-mini.svg" alt="" width="16" height="16">16 · mini</figure>
+      <figure><img src="ih-mini.svg" alt="" width="12" height="12">12 · mini</figure>
+      <figure style="color:var(--toner)"><img src="ih-mark-mono.svg" alt="" width="48" height="48" style="filter:var(--mono-filter,none)">one ink</figure>
+    </div>
+    <p class="small">Below 20 pixels the fingertips blur, so use the <b>mini</b> (no fingertips, fatter pointer). The one-ink version is for stamps, embroidery and anywhere colour can’t go.</p>
+  </article>
+  <div class="swatches" style="margin-top:24px">
+    <div class="sw"><i style="background:#00838A"></i><p><b>Teal</b>#00838A · on dark #2FB3B0</p></div>
+    <div class="sw"><i style="background:#FF5A1F"></i><p><b>Flame</b>#FF5A1F · on dark #FF7A45</p></div>
+    <div class="sw"><i style="background:#16181B"></i><p><b>Toner</b>#16181B</p></div>
+    <div class="sw"><i style="background:#F2EFE6;border-bottom:1px solid var(--rule)"></i><p><b>Paper</b>#F2EFE6</p></div>
+  </div>
+  <p class="small" style="margin-top:14px">Type: a stencil display face (Big Shoulders Stencil, heavy, capitals), Spline Sans for reading, Courier Prime for labels. Two inks on paper, the second a hair out of register, as in megaZINE, but megaZINE prints blue and pink.</p>
+
+  <div class="sect"><h2><span class="num">Take them</span>Downloads</h2></div>
+  <div class="dl">
+    <a class="btn" href="ih-mark.svg" download>Mark</a>
+    <a class="btn" href="ih-mark-dark.svg" download>Mark, for dark</a>
+    <a class="btn" href="ih-mini.svg" download>Mini</a>
+    <a class="btn" href="ih-mark-mono.svg" download>One ink</a>
+    <a class="btn" href="ih-wordmark.svg" download>Words</a>
+    <a class="btn" href="ih-wordmark-line.svg" download>Words, one line</a>
+    <a class="btn" href="ih-lockup.svg" download>Mark + words</a>
+  </div>
+
+  <div class="cols" style="margin-top:30px">
+    <div class="do"><h3>Please</h3><ul>
+      <li>Put the mark next to every control that others can move, and nowhere else.</li>
+      <li>Let it go grey when the app isn’t linked. (<code>hands.tag</code> does this.)</li>
+      <li>Change its colours to fit your app with <code>--ih-teal</code>, <code>--ih-flame</code>, <code>--ih-cut</code> if you must.</li>
+    </ul></div>
+    <div class="dont"><h3>Please don’t</h3><ul>
+      <li>Use it on controls that can’t be moved remotely. It’s a promise.</li>
+      <li>Hide the switch that stops remote control behind it.</li>
+      <li>Redraw it as a power button. (It’s a knob.)</li>
+    </ul></div>
+  </div>
+</main>
+<footer class="wrap"><span><img src="ih-wordmark-line.svg" alt="Invisible Hands" style="height:16px;vertical-align:middle"> · in <a href="https://megazine.org/">megaZINE</a></span><span><a href="../">Home</a> · <a href="../docs/">Docs</a></span></footer>
+<script src="../invisible-hands.js"></script>
+<script src="../site/site.js"></script>
+<script>
+// a pretend app: the tags here are the real ones from the library, driven without a relay
+(function () {
+  var v = { speed: 0.4, colour: 0.7 };
+  var hands = InvisibleHands.create({ app: 'brand-demo', name: 'Brand demo', autoJoin: false, params: [
+    { id: 'speed', label: 'Speed', get: function () { return v.speed; }, set: function (x) { v.speed = x; } },
+    { id: 'colour', label: 'Colour', get: function () { return v.colour; }, set: function (x) { v.colour = x; } }] });
+  document.getElementById('t1').appendChild(hands.tag('speed'));
+  document.getElementById('t2').appendChild(hands.tag('colour'));
+  document.getElementById('badge-slot').appendChild(hands.badge());
+  ['m1', 'm2'].forEach(function (id, i) { document.getElementById(id).addEventListener('input', function (e) { v[i ? 'colour' : 'speed'] = +e.target.value; hands.recenter(i ? 'colour' : 'speed'); }); });
+  // "Wiggle": show what a linked tag looks like when someone else moves it
+  document.getElementById('wiggle').onclick = function () {
+    var tags = document.querySelectorAll('#mock .ih-tag'), t0 = performance.now(), n = 0;
+    tags.forEach(function (t) { t.classList.add('ih-linked', 'ih-live'); });
+    (function step() {
+      var t = (performance.now() - t0) / 1000;
+      v.speed = 0.5 + 0.4 * Math.sin(t * 5); v.colour = 0.5 + 0.4 * Math.cos(t * 3.3);
+      document.getElementById('m1').value = v.speed; document.getElementById('m2').value = v.colour;
+      tags.forEach(function (tag, i) {
+        tag.querySelector('.ih-pointer').setAttribute('transform', 'rotate(' + (-135 + 270 * (i ? v.colour : v.speed)).toFixed(1) + ' 16 16)');
+        if (n % 8 === i * 4) { tag.classList.add('ih-hit'); setTimeout(function () { tag.classList.remove('ih-hit'); }, 200); }
+      });
+      n++;
+      if (t < 3) requestAnimationFrame(step); else tags.forEach(function (t) { t.classList.remove('ih-linked', 'ih-live'); });
+    })();
+  };
+})();
+</script>
+</body>
+</html>

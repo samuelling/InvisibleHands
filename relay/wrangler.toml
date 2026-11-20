@@ -2,14 +2,14 @@ name = "invisible-hands"
 main = "worker.js"
 compatibility_date = "2026-06-01"
 
-# The editors' own sites need no key. Everyone else is issued one (see the keys page on the site).
+# Anyone can connect, no key needed. These are the editors' sites, which may use the keys page (/admin).
 # "http://localhost:*" matches any port.
 [vars]
 HOUSE_ORIGINS = "https://samuelling.github.io https://crumplabsandbox.github.io https://megazine.org https://megazinehq.github.io http://localhost:* http://127.0.0.1:*"
 # The month's ceiling, in incoming frames, for everyone together. 20 frames bill as one Durable Objects
 # request and the Workers Paid plan includes 1,000,000 a month, so 18M frames stays inside it.
 MONTHLY_FRAMES = "18000000"
-# The default ceiling for one key, per month (about 2.5 hours of a busy 4-control patch a day).
+# The default ceiling for an app given a key (keys are optional; the editors hand them out on request).
 KEY_MONTHLY_FRAMES = "2000000"
 REPORT_SECONDS = "60"
 CACHE_SECONDS = "60"
