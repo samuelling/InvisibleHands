@@ -73,11 +73,14 @@
     if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
     return d;
   }
-  function drawBlot(t, dt) {
-    var c = $('blot'), d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height;
-    g.globalCompositeOperation = 'source-over'; g.fillStyle = css('--paper'); g.fillRect(0, 0, W, H);
+  function stepBlot(t, dt) {
     spinA += (B.spin - 0.1) * dt * 1.6;
     splat *= Math.pow(0.12, dt);
+    breath = 0.5 + 0.5 * Math.sin(t * 1.1);
+  }
+  function drawBlot(t, id) {
+    var c = $(id || 'blot'), d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height;
+    g.globalCompositeOperation = 'source-over'; g.fillStyle = css('--paper'); g.fillRect(0, 0, W, H);
     var pitch = (4 + B.grain * 13) * d, R0 = Math.min(W, H) * (0.12 + 0.24 * B.size), blend = dark() ? 'screen' : 'multiply';
     function layer(color, ang, ox, oy, ph) {
       g.globalCompositeOperation = blend; g.fillStyle = color; g.beginPath();
@@ -97,7 +100,7 @@
     layer(css('--teal'), 0.26, 0, 0, 0);
     layer(css('--flame'), 1.31, B.mis * 0.09 * W, B.mis * 0.06 * H, 1.7);
     g.globalCompositeOperation = 'source-over';
-    breath = 0.5 + 0.5 * Math.sin(t * 1.1);
+    if (id) return;
     BP.forEach(function (p) { var s = own[p[0]]; if (document.activeElement !== s) s.value = Math.round(B[p[0]] * 1000); });
   }
 
@@ -315,16 +318,17 @@
   $('fire').addEventListener('click', fire);
 
   // ---------------------------------------------------------------- one animation loop for all three drawings
-  var tPrev = performance.now(), visible = { blot: true, pend: true, sim: true };
+  var tPrev = performance.now(), visible = { blot: true, 'blot-mini': false, pend: true, sim: true };
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (es) { es.forEach(function (e) { visible[e.target.id] = e.isIntersecting; }); });
-    ['blot', 'pend', 'sim'].forEach(function (id) { io.observe($(id)); });
+    ['blot', 'blot-mini', 'pend', 'sim'].forEach(function (id) { io.observe($(id)); });
   }
   (function frame(now) {
     var dt = Math.min(0.1, (now - tPrev) / 1000); tPrev = now;
     var t = now / 1000;
-    if (visible.blot) drawBlot(reduce ? 0 : t, reduce ? 0 : dt);
-    else { spinA += (B.spin - 0.1) * dt * 1.6; splat *= Math.pow(0.12, dt); breath = 0.5 + 0.5 * Math.sin(t * 1.1); }   // keep living off screen
+    stepBlot(reduce ? 0 : t, reduce ? 0 : dt);   // the Blot keeps living off screen
+    if (visible.blot) drawBlot(reduce ? 0 : t);
+    if (visible['blot-mini']) drawBlot(reduce ? 0 : t, 'blot-mini');   // its copy on the Outputs tab
     if (visible.pend) drawPend(t, reduce ? dt * 0.3 : dt); else stepPend(dt);
     if (visible.sim) drawSim(now);
     requestAnimationFrame(frame);
