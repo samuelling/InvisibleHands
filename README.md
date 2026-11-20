@@ -13,7 +13,7 @@ An app that includes Invisible Hands lists its controls. Anyone in the same **ro
 - `python/`: a Python client with a command line (peers, set, lfo, listen) and an OSC bridge for Max, Pd, Live, TouchDesigner.
 - `examples/`: the smallest web app that can be moved, a no-library JavaScript destination, and a Go one.
 - `brand/`: the mark (knob, fingertips, teal and flame) as SVGs, and a page on using it. In the library: `hands.tag(id)` beside a control, `hands.badge()` in a toolbar, `InvisibleHands.icon()`.
-- `index.html`, `docs/`, `site/`: the website (concept, four live demos, step-by-step docs). `keys/`: the editors' page for optional keys and this month's usage.
+- `index.html`, `docs/`, `site/`: the website (concept, four live demos, step-by-step docs). `dashboard/`: the editors' usage dashboard (live rooms, frames per day and hour, by app and site, estimated requests and bill). `keys/`: optional keys.
 - `console/`: the **console**, with MEGA·CV always on offer (one button opens it in the same room). Join a room and move whatever is in it, or patch any app's output into any app's knob with its patch matrix (saved in the address). Also the reference for anything that sends.
 - `invisible-hands-kit.zip`: everything above in one download (`python3 tools/make_kit.py` rebuilds it).
 - `relay/`: the room relay, for Cloudflare, with a local version for development.
