@@ -9,6 +9,7 @@ An app that includes Invisible Hands lists its controls. Anyone in the same **ro
 - `invisible-hands.js`: the one file a web app adds. No dependencies. Also runs in Node 22+.
 - `INVISIBLE_HANDS.md`: instructions for Claude. Drop it in a project and say "Read INVISIBLE_HANDS.md and add Invisible Hands to this app."
 - `GUIDE.md`: doing it yourself, in any language: a wire transcript, step-by-step, a Swift sketch.
+- `MEGA_CV.md`: for Matt's Claude: the changes that make MEGA·CV's Hands module light on the relay.
 - `SPEC.md`: the protocol, one page.
 - `python/`: a Python client with a command line (peers, set, lfo, listen) and an OSC bridge for Max, Pd, Live, TouchDesigner.
 - `examples/`: the smallest web app that can be moved, a no-library JavaScript destination, and a Go one.
