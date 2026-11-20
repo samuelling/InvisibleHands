@@ -80,6 +80,20 @@ try {
   const list = await (await adminCall('/keys')).json();
   ok(list.keys.length === 3 && list.usage.now.frames > 0 && list.usage.now.who['@program'] === undefined, 'the keys page lists keys and this month\'s count (' + list.usage.now.frames + ' frames)');
 
+  // the dashboard's numbers
+  const d1 = await open('room-dash', { origin: HOUSE, app: 'dash-a' }), d2 = await open('room-dash', { origin: HOUSE, app: 'dash-b' });
+  for (let i = 0; i < 5; i++) d1.send({ t: 'set', p: 'x', v: i / 10 });
+  await wait(2500);
+  const u = await (await adminCall('/usage')).json(), nowm = u.usage.now;
+  const today = new Date().toISOString().slice(0, 10), hour = new Date().toISOString().slice(0, 13);
+  ok(nowm.apps['dash-a'] >= 5 && nowm.days[today] > 0 && u.usage.hours[hour] > 0, 'usage is counted by app, by day and by hour');
+  ok(nowm.joins >= 2 && u.usage.live.some(r => r.s === 2 && r.apps['dash-a'] === 1 && r.apps['dash-b'] === 1), 'new connections are counted, and live rooms show who is in them');
+  ok(!JSON.stringify(u).includes('room-dash'), 'room codes never reach the meter');
+  d1.ws.close(); d2.ws.close();
+  await wait(2500);
+  const u2 = await (await adminCall('/usage')).json();
+  ok(!u2.usage.live.some(r => r.apps['dash-a']), 'an emptied room drops off the live list');
+
   // the monthly ceiling for everyone: 600 frames
   const b = await open('room-three', { origin: HOUSE, app: 'busy' });
   for (let i = 0; i < 10; i++) { for (let k = 0; k < 70; k++) b.send({ t: 'mod', p: 'x', v: 0.1 }); await wait(600); }

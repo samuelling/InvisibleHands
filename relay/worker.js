@@ -50,6 +50,14 @@ function settings(env) {
   };
 }
 const meterOf = env => env.METER.get(env.METER.idFromName('meter'));
+// rooms are reported to the meter by a short hash, never by their code (the code is the only way in)
+async function roomTag(code) {
+  const h = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('ih-room:' + code)));
+  return Array.from(h.slice(0, 5), b => b.toString(16).padStart(2, '0')).join('');
+}
+const LIVE_MAX = 86400000;  // a room the meter hasn't heard from in a day is assumed gone (a missed close)
+const MAP_MAX = 400;        // most apps or sites the month keeps by name; the rest are counted as "(others)"
+function bump(map, k, n) { if (!(k in map) && Object.keys(map).length >= MAP_MAX) k = '(others)'; map[k] = (map[k] || 0) + n; }
 
 export default {
   async fetch(request, env) {
@@ -82,6 +90,7 @@ export default {
 
     // pass the decision to the room in headers the client cannot set: these overwrite anything sent
     const h = new Headers(request.headers);
+    h.set('x-ih-room', await roomTag(code));
     h.set('x-ih-who', d.who); h.set('x-ih-editor', d.editor ? '1' : ''); h.set('x-ih-limit', String(d.limit || (key && !d.editor ? cfg.perKey : 0)));
     return env.ROOMS.get(env.ROOMS.idFromName(code)).fetch(new Request(request, { headers: h }));
   }
@@ -105,7 +114,8 @@ export class Room {
     const url = new URL(request.url);
     if (this.state.getWebSockets().length >= LIMITS.peers) return refuse(CLOSE.busy, 'This room is full.');
     const me = Object.assign({ id: newId() }, cleanPeer(url.searchParams.get('app'), url.searchParams.get('name')),
-      { who: request.headers.get('x-ih-who') || '?', editor: !!request.headers.get('x-ih-editor'), limit: int(request.headers.get('x-ih-limit'), 0), n: 0 });
+      { who: request.headers.get('x-ih-who') || '?', editor: !!request.headers.get('x-ih-editor'), limit: int(request.headers.get('x-ih-limit'), 0), n: 0, j: 1 });
+    if (!this.tag) this.tag = request.headers.get('x-ih-room') || '?';
     const pair = new WebSocketPair(), client = pair[0], server = pair[1];
     this.state.acceptWebSocket(server);
     server.serializeAttachment(me);
@@ -113,6 +123,8 @@ export class Room {
     server.send(JSON.stringify(welcome(me, roster, Date.now())));
     const hello = JSON.stringify(joined(me));
     for (const p of roster) if (p.id !== me.id) { try { p.ws.send(hello); } catch (err) {} }
+    await this.state.storage.put('tag', this.tag);
+    await this.wake();   // so the dashboard hears about the new connection within a minute
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -134,30 +146,38 @@ export class Room {
     await this.wake();
   }
 
-  // a busy room reports to the meter once a minute; a quiet room sets no alarm at all
+  // a room reports to the meter at most once a minute, and only after something happened: frames, a join, a leave.
+  // A room where nothing moves costs nothing, however long people sit in it.
   async wake() {
-    if (this.alarmSet === null) this.alarmSet = (await this.state.storage.getAlarm()) !== null;
-    if (!this.alarmSet) { this.alarmSet = true; await this.state.storage.setAlarm(Date.now() + settings(this.env).reportMs); }
+    if (this.alarmAt === undefined) this.alarmAt = await this.state.storage.getAlarm();
+    const want = Date.now() + settings(this.env).reportMs;
+    if (!this.alarmAt || this.alarmAt > want + 1000) { this.alarmAt = want; await this.state.storage.setAlarm(want); }
   }
 
   async alarm() {
-    this.alarmSet = false;
-    const tally = {}, sockets = this.state.getWebSockets();
-    let frames = 0;
+    this.alarmAt = null;
+    const tally = {}, apps = {}, present = {}, sockets = this.state.getWebSockets();
+    let frames = 0, joins = 0;
     for (const ws of sockets) {
-      const a = ws.deserializeAttachment(); if (!a || !a.n) continue;
-      frames += a.n;
-      const t = tally[a.who] || (tally[a.who] = { n: 0, limit: a.limit || 0 }); t.n += a.n;
-      a.n = 0; ws.serializeAttachment(a);
+      const a = ws.deserializeAttachment(); if (!a) continue;
+      present[a.app] = (present[a.app] || 0) + 1;
+      if (!a.n && !a.j) continue;
+      frames += a.n || 0; joins += a.j || 0;
+      const t = tally[a.who] || (tally[a.who] = { n: 0, limit: a.limit || 0 }); t.n += a.n || 0;
+      apps[a.app] = (apps[a.app] || 0) + (a.n || 0);
+      a.n = 0; a.j = 0; ws.serializeAttachment(a);
     }
     const gone = (await this.state.storage.get('gone')) || null;   // counts from sockets that closed since the last report
     if (gone) {
-      for (const who in gone) { const t = tally[who] || (tally[who] = { n: 0, limit: gone[who].limit }); t.n += gone[who].n; frames += gone[who].n; }
+      for (const who in gone.who || {}) { const g = gone.who[who], t = tally[who] || (tally[who] = { n: 0, limit: g.limit }); t.n += g.n; frames += g.n; }
+      for (const app in gone.apps || {}) apps[app] = (apps[app] || 0) + gone.apps[app];
+      joins += gone.joins || 0;
       await this.state.storage.delete('gone');
     }
-    if (!frames) return;
+    if (!this.tag) this.tag = (await this.state.storage.get('tag')) || '?';
     const cfg = settings(this.env);
-    const s = await meterOf(this.env).report(frames, tally, cfg.monthly);
+    const s = await meterOf(this.env).report(frames, tally, cfg.monthly, { apps: apps, joins: joins, room: this.tag, sockets: sockets.length, present: present });
+
     // over the line: let the people in this room know, and close the connections that no longer qualify
     for (const ws of sockets) {
       const a = ws.deserializeAttachment(); if (!a) continue;
@@ -172,11 +192,12 @@ export class Room {
     const me = ws.deserializeAttachment();
     if (!me) return;
     this.buckets.delete(me.id);
-    if (me.n) {   // keep its last count for the next report
-      const g = (await this.state.storage.get('gone')) || {};
-      const t = g[me.who] || (g[me.who] = { n: 0, limit: me.limit || 0 }); t.n += me.n;
+    {   // keep its last count for the next report, which also tells the dashboard it left
+      const g = (await this.state.storage.get('gone')) || { who: {}, apps: {}, joins: 0 };
+      if (me.n) { const t = g.who[me.who] || (g.who[me.who] = { n: 0, limit: me.limit || 0 }); t.n += me.n; g.apps[me.app] = (g.apps[me.app] || 0) + me.n; }
+      g.joins += me.j || 0;
       await this.state.storage.put('gone', g);
-      me.n = 0; try { ws.serializeAttachment(me); } catch (err) {}
+      me.n = 0; me.j = 0; try { ws.serializeAttachment(me); } catch (err) {}
       await this.wake();
     }
     const bye = JSON.stringify(left(me.id));
@@ -193,18 +214,34 @@ export class Meter extends DurableObject {
     const now = monthOf(Date.now());
     let m = await this.ctx.storage.get('m');
     if (!m || m.month !== now) {
-      if (m) await this.ctx.storage.put('last', m);   // keep last month for the keys page
-      m = { month: now, frames: 0, who: {}, over: [] };
+      if (m) await this.ctx.storage.put('last', m);   // keep last month for the dashboard
+      m = { month: now, frames: 0, who: {}, over: [], apps: {}, days: {}, joins: 0, reports: 0 };
       await this.ctx.storage.put('m', m);
     }
+    m.apps = m.apps || {}; m.days = m.days || {}; m.joins = m.joins || 0; m.reports = m.reports || 0;
     return m;
   }
-  async report(frames, tally, monthly) {
-    const m = await this.month();
-    m.frames += frames;
-    for (const who in tally) {
+  async report(frames, tally, monthly, extra) {
+    const m = await this.month(), now = Date.now(), iso = new Date(now).toISOString();
+    extra = extra || {};
+    m.frames += frames; m.reports += 1; m.joins += extra.joins || 0;
+    m.days[iso.slice(0, 10)] = (m.days[iso.slice(0, 10)] || 0) + frames;
+    for (const a in extra.apps || {}) bump(m.apps, a, extra.apps[a]);
+    // the last 48 hours, by hour
+    const hours = (await this.ctx.storage.get('hours')) || {}, hk = iso.slice(0, 13);
+    hours[hk] = (hours[hk] || 0) + frames;
+    for (const k of Object.keys(hours)) if (now - Date.parse(k + ':00:00Z') > 48 * 3600000) delete hours[k];
+    await this.ctx.storage.put('hours', hours);
+    // which rooms are open right now (by hash), how many connections, which apps
+    const live = (await this.ctx.storage.get('live')) || {};
+    if (extra.room) { if (extra.sockets) live[extra.room] = { s: extra.sockets, apps: extra.present || {}, t: now }; else delete live[extra.room]; }
+    for (const k of Object.keys(live)) if (now - live[k].t > LIVE_MAX) delete live[k];
+    await this.ctx.storage.put('live', live);
+    for (const src in tally) {
+      // keys are always kept by name (their ceilings depend on it); a flood of distinct websites folds into one line
+      const who = !(src in m.who) && Object.keys(m.who).length >= MAP_MAX && src[0] === '@' ? '@(others)' : src;
       const w = m.who[who] || (m.who[who] = { n: 0, limit: 0 });
-      w.n += tally[who].n; w.limit = tally[who].limit || 0;
+      w.n += tally[src].n; w.limit = tally[src].limit || 0;
       if (w.limit && w.n >= w.limit && !m.over.includes(who)) m.over.push(who);
     }
     await this.ctx.storage.put('m', m);
@@ -214,7 +251,11 @@ export class Meter extends DurableObject {
     const m = await this.month();
     return { month: m.month, frames: m.frames, monthly: monthly, over: monthly > 0 && m.frames >= monthly, keysOver: m.over };
   }
-  async usage() { return { now: await this.month(), last: (await this.ctx.storage.get('last')) || null }; }
+  async usage() {
+    const now = Date.now(), live = (await this.ctx.storage.get('live')) || {}, rooms = [];
+    for (const k in live) if (now - live[k].t <= LIVE_MAX) rooms.push(live[k]);
+    return { now: await this.month(), last: (await this.ctx.storage.get('last')) || null, hours: (await this.ctx.storage.get('hours')) || {}, live: rooms, at: now };
+  }
   async unblock(who) { const m = await this.month(); m.over = m.over.filter(x => x !== who); if (m.who[who]) m.who[who].n = 0; await this.ctx.storage.put('m', m); return true; }
 }
 
@@ -241,6 +282,9 @@ async function admin(request, env, url, cfg) {
   if (!env.KEYS) return json({ error: 'No KEYS namespace is bound.' }, 500, cors);
   const path = url.pathname.replace(/^\/admin/, '');
 
+  if (path === '/usage' && request.method === 'GET') {
+    return json({ usage: await meterOf(env).usage(), settings: { monthly: cfg.monthly, perKey: cfg.perKey, reportSeconds: cfg.reportMs / 1000 } }, 200, cors);
+  }
   if (path === '/keys' && request.method === 'GET') {
     const list = await env.KEYS.list({ limit: 1000 }), out = [];
     for (const k of list.keys) { const r = await env.KEYS.get(k.name, 'json'); if (r) out.push(Object.assign({ key: k.name }, r)); }

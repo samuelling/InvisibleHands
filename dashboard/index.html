@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Invisible Hands · dashboard</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="../brand/ih-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@800;900&family=Courier+Prime:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../site/site.css">
+<style>
+main { padding-bottom: 40px; }
+input[type=password] { width: 100%; font: 1rem var(--body); color: inherit; background: var(--paper); border: 1.5px solid var(--rule); padding: 8px 10px; }
+.err { color: var(--flame); font: 700 .9rem var(--type); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin: 22px 0 6px; font: 400 .84rem var(--type); color: var(--muted); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 18px; margin-top: 18px; }
+.tile { background: var(--sheet); border: 1px solid var(--rule); padding: 16px; display: grid; gap: 4px; align-content: start; }
+.tile .lab { font: 700 .74rem/1.2 var(--type); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.tile .big { font: 900 clamp(2.4rem, 6vw, 3.4rem)/.95 var(--display); }
+.tile .sub { font: 400 .82rem/1.4 var(--type); color: var(--muted); }
+.tile.live .big { color: var(--teal); }
+.meter { height: 12px; background: color-mix(in srgb, var(--toner) 8%, transparent); border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+.meter i { display: block; height: 100%; background: var(--teal); border-radius: 0 4px 4px 0; }
+.meter.hot i { background: var(--flame); }
+.chart { position: relative; }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart .axis text { font: 400 10px var(--type); fill: var(--muted); }
+.chart .grid line { stroke: var(--rule); stroke-width: 1; }
+.chart .bar { fill: var(--teal); }
+.chart .bar.today { fill: var(--flame); }
+.chart .hit { fill: transparent; cursor: default; }
+.chart .hit:hover + .bar, .chart .bar.hot { opacity: .75; }
+.tip { position: absolute; pointer-events: none; background: var(--toner); color: var(--paper); font: 700 .76rem/1.35 var(--type); padding: 6px 8px; border-radius: 3px; white-space: nowrap; transform: translate(-50%, -110%); display: none; z-index: 2; }
+.hbars { display: grid; gap: 8px; }
+.hbar { display: grid; grid-template-columns: minmax(110px, 200px) 1fr 70px; gap: 10px; align-items: center; font: 400 .84rem var(--type); }
+.hbar .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.hbar .tr { height: 12px; background: color-mix(in srgb, var(--toner) 6%, transparent); border-radius: 2px; }
+.hbar .tr i { display: block; height: 100%; background: var(--teal); border-radius: 0 4px 4px 0; min-width: 2px; }
+.hbar .v { text-align: right; color: var(--muted); }
+.rooms { display: grid; gap: 8px; }
+.room { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--rule); background: var(--paper); font: 400 .86rem var(--type); }
+.room b { font-weight: 700; }
+.chip { border: 1px solid var(--teal); color: var(--teal); padding: 2px 8px; border-radius: 999px; font: 700 .74rem var(--type); }
+.empty { color: var(--muted); font: 400 .9rem var(--type); }
+details.table { margin-top: 10px; font: 400 .82rem var(--type); }
+details.table table { border-collapse: collapse; margin-top: 8px; }
+details.table td, details.table th { padding: 3px 14px 3px 0; text-align: left; border-bottom: 1px solid var(--rule); }
+</style>
+</head>
+<body>
+<header class="wrap mast" style="padding-bottom:18px">
+  <div class="kicker"><a href="../">Invisible Hands</a><span>Editors only</span><span class="r"><a href="../console/">Control center</a> · <a href="../keys/">Keys</a></span></div>
+  <div class="brandrow"><img src="../brand/ih-mark.svg" alt="" style="width:clamp(64px,10vw,120px)"><h1 class="logo" id="logo" aria-label="Dashboard"><span class="ink">DASH<span class="lc">BOARD</span></span><span class="mis" aria-hidden="true">DASH<span class="lc">BOARD</span></span></h1></div>
+  <p class="lede">Who’s linked right now, how much the relay has carried this month, and what it’s costing.</p>
+</header>
+<main class="wrap">
+  <section class="clip" id="login" style="margin-top:28px;max-width:520px">
+    <h3>Passphrase</h3>
+    <p class="small">The relay’s <code>ADMIN_TOKEN</code>. Kept in this tab only.</p>
+    <input type="password" id="tok" autocomplete="current-password" aria-label="Passphrase">
+    <p style="margin-top:12px"><button class="btn primary" id="go" type="button">Open</button> <span class="err" id="login-err"></span></p>
+  </section>
+
+  <div id="app" hidden>
+    <div class="toolbar"><span id="stamp"></span><button class="btn small" id="refresh" type="button">Refresh</button><span>Updates every minute while this tab is showing. Each look costs the relay two requests.</span></div>
+
+    <div class="tiles">
+      <div class="tile live"><span class="lab">Right now</span><span class="big" id="t-conn">0</span><span class="sub" id="t-conn-sub"></span></div>
+      <div class="tile"><span class="lab">Frames this month</span><span class="big" id="t-frames">0</span><div class="meter" id="t-frames-m"><i></i></div><span class="sub" id="t-frames-sub"></span></div>
+      <div class="tile"><span class="lab">Cloudflare requests, about</span><span class="big" id="t-req">0</span><div class="meter" id="t-req-m"><i></i></div><span class="sub" id="t-req-sub"></span></div>
+      <div class="tile"><span class="lab">This month’s bill, about</span><span class="big" id="t-bill">$5</span><span class="sub" id="t-bill-sub"></span></div>
+    </div>
+
+    <div class="sect"><h2><span class="num">Live</span>Rooms open now</h2><p>By app, never by room code. A room drops off when its last app leaves.</p></div>
+    <article class="clip"><div class="rooms" id="rooms"></div></article>
+
+    <div class="sect"><h2><span class="num">This month</span>Frames per day</h2><p>Every incoming frame counts the same; 20 of them bill as one request. Today is orange.</p></div>
+    <article class="clip"><div class="chart" id="days"></div><details class="table"><summary>As a table</summary><table id="days-t"></table></details></article>
+
+    <div class="sect"><h2><span class="num">Last 48 hours</span>Frames per hour</h2></div>
+    <article class="clip"><div class="chart" id="hours"></div></article>
+
+    <div class="board two" style="margin-top:30px">
+      <article class="clip"><span class="kind">By app, this month</span><div class="hbars" id="apps"></div></article>
+      <article class="clip"><span class="kind">By website or key, this month</span><div class="hbars" id="who"></div></article>
+    </div>
+
+    <div class="cols" style="margin-top:30px">
+      <div><h3>How the count works</h3><ul>
+        <li>A room reports to the meter at most once a minute, and only after something happened: a move, a join, a leave. A room where nothing moves costs nothing.</li>
+        <li>The libraries send a value only when it changes and pack moves made together into one frame.</li>
+        <li>Rooms sleep between messages, so time costs next to nothing; the bill is in requests.</li>
+      </ul></div>
+      <div><h3>The guard rails</h3><ul>
+        <li>Past the monthly ceiling, the relay closes until the 1st (editor keys excepted). Raise <code>MONTHLY_FRAMES</code> in <code>wrangler.toml</code> and redeploy to open it.</li>
+        <li>30 new connections a minute per address; floods are cut off.</li>
+        <li>The request estimate is frames ÷ 20, plus a request per new connection, plus two per room report. Cloudflare’s own usage page has the exact figure.</li>
+      </ul></div>
+    </div>
+  </div>
+</main>
+<footer class="wrap"><span>Invisible Hands · dashboard</span><span><a href="../">Home</a> · <a href="../keys/">Keys</a></span></footer>
+<script src="../site/site.js"></script>
+<script>
+(function () {
+  'use strict';
+  var RELAY = (new URLSearchParams(location.search).get('relay') || 'https://invisible-hands.samuelling.workers.dev').replace(/^ws/, 'http').replace(/\/+$/, '');
+  var INCLUDED = 1000000, PER_MILLION = 0.15, BASE = 5;
+  var $ = function (id) { return document.getElementById(id); }, token = '', timer = 0;
+  try { token = sessionStorage.getItem('ih-admin') || ''; } catch (err) {}
+  var fmt = function (n) { n = Math.round(n); return n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 1 : 2) + 'M' : n >= 1e4 ? Math.round(n / 1e3) + 'k' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n); };
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+  var SVG = 'http://www.w3.org/2000/svg';
+  function s(tag, attrs) { var e = document.createElementNS(SVG, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+  // a bar chart for counts over time: one teal series, a recessive grid, a hover label on every bar
+  function bars(box, rows, opts) {
+    box.textContent = '';
+    var W = 900, H = 220, L = 46, B = 24, T = 8, max = Math.max(1, Math.max.apply(null, rows.map(function (r) { return r.v; })));
+    var nice = Math.pow(10, Math.floor(Math.log10(max))), top = Math.ceil(max / nice) * nice;
+    var svg = s('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': opts.label }), grid = s('g', { 'class': 'grid' }), axis = s('g', { 'class': 'axis' });
+    for (var i = 0; i <= 4; i++) {
+      var y = T + (H - T - B) * (1 - i / 4);
+      grid.appendChild(s('line', { x1: L, x2: W, y1: y, y2: y }));
+      var t = s('text', { x: L - 6, y: y + 3, 'text-anchor': 'end' }); t.textContent = fmt(top * i / 4); axis.appendChild(t);
+    }
+    svg.appendChild(grid); svg.appendChild(axis);
+    var n = rows.length, step = (W - L) / Math.max(1, n), bw = Math.max(2, Math.min(28, step - 2)), tip = el('div', 'tip');
+    rows.forEach(function (r, k) {
+      var x = L + k * step + (step - bw) / 2, h = (H - T - B) * r.v / top, y = H - B - h;
+      var hit = s('rect', { 'class': 'hit', x: L + k * step, y: T, width: step, height: H - T - B });
+      var bar = s('path', { 'class': 'bar' + (r.today ? ' today' : ''), d: h > 0 ? 'M' + x + ' ' + (H - B) + 'V' + (y + Math.min(4, h)) + 'Q' + x + ' ' + y + ' ' + (x + Math.min(4, bw / 2)) + ' ' + y + 'H' + (x + bw - Math.min(4, bw / 2)) + 'Q' + (x + bw) + ' ' + y + ' ' + (x + bw) + ' ' + (y + Math.min(4, h)) + 'V' + (H - B) + 'Z' : '' });
+      hit.addEventListener('mouseenter', function () { tip.style.display = 'block'; tip.textContent = r.label + ' · ' + r.v.toLocaleString() + ' frames'; tip.style.left = ((x + bw / 2) / W * 100) + '%'; tip.style.top = (y / H * 100) + '%'; bar.classList.add('hot'); });
+      hit.addEventListener('mouseleave', function () { tip.style.display = 'none'; bar.classList.remove('hot'); });
+      svg.appendChild(hit); svg.appendChild(bar);
+      if (r.tick) { var lt = s('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle' }); lt.textContent = r.tick; axis.appendChild(lt); }
+    });
+    box.appendChild(svg); box.appendChild(tip);
+  }
+  function hbars(box, map, names) {
+    box.textContent = '';
+    var rows = Object.keys(map).map(function (k) { return { k: k, v: map[k].n !== undefined ? map[k].n : map[k] }; }).sort(function (a, b) { return b.v - a.v; }).slice(0, 14);
+    if (!rows.length) { box.appendChild(el('p', 'empty', 'Nothing yet this month.')); return; }
+    var max = rows[0].v || 1;
+    rows.forEach(function (r) {
+      var row = el('div', 'hbar'), tr = el('div', 'tr'), i = el('i');
+      i.style.width = (r.v / max * 100).toFixed(1) + '%'; tr.appendChild(i);
+      row.append(el('span', 'nm', names(r.k)), tr, el('span', 'v', fmt(r.v)));
+      row.title = names(r.k) + ': ' + r.v.toLocaleString() + ' frames';
+      box.appendChild(row);
+    });
+  }
+  var APPN = { 'mega-cv': 'MEGA·CV', console: 'Control center', gaborgrove: 'Gabor Grove', splatterhaus: 'Splatterhaus', frisky: 'Frisky', flyharp: 'FlyHarp', blot: 'Demo: Blot', pendulum: 'Demo: Pendulum', 'demo-hand': 'Demo: Hand', chamber: 'Chamber' };
+  var appName = function (k) { return APPN[k] || k; };
+
+  function draw(d) {
+    var u = d.usage, m = u.now, st = d.settings;
+    $('login').hidden = true; $('app').hidden = false;
+    $('stamp').textContent = m.month + ' · as of ' + new Date(u.at).toLocaleTimeString();
+    // right now
+    var conns = 0, appsNow = {};
+    u.live.forEach(function (r) { conns += r.s; for (var a in r.apps) appsNow[a] = (appsNow[a] || 0) + r.apps[a]; });
+    $('t-conn').textContent = conns;
+    $('t-conn-sub').textContent = conns ? 'connections in ' + u.live.length + (u.live.length === 1 ? ' room' : ' rooms') : 'Nobody linked.';
+    // the month
+    var frac = st.monthly ? m.frames / st.monthly : 0;
+    $('t-frames').textContent = fmt(m.frames);
+    $('t-frames-m').firstChild.style.width = Math.min(100, frac * 100).toFixed(1) + '%'; $('t-frames-m').classList.toggle('hot', frac > 0.8);
+    $('t-frames-sub').textContent = 'of a ' + fmt(st.monthly) + ' ceiling (' + (frac * 100).toFixed(frac < 0.1 ? 2 : 1) + '%)';
+    var req = m.frames / 20 + (m.joins || 0) + 2 * (m.reports || 0);
+    $('t-req').textContent = fmt(req);
+    $('t-req-m').firstChild.style.width = Math.min(100, req / INCLUDED * 100).toFixed(1) + '%'; $('t-req-m').classList.toggle('hot', req > INCLUDED * 0.8);
+    $('t-req-sub').textContent = 'of 1M included · ' + fmt(m.joins || 0) + ' connections, ' + fmt(m.reports || 0) + ' reports';
+    var over = Math.max(0, req - INCLUDED), bill = BASE + Math.ceil(over / 1e6) * PER_MILLION;
+    $('t-bill').textContent = '$' + bill.toFixed(2);
+    $('t-bill-sub').textContent = over ? 'The plan’s $5 plus $' + (bill - BASE).toFixed(2) + ' in extra requests.' : 'The plan’s $5. Everything else is inside what it includes.';
+    // rooms
+    var rb = $('rooms'); rb.textContent = '';
+    if (!u.live.length) rb.appendChild(el('p', 'empty', 'No rooms open right now.'));
+    u.live.sort(function (a, b) { return b.s - a.s; }).forEach(function (r, i) {
+      var row = el('div', 'room'); row.appendChild(el('b', '', 'Room ' + (i + 1))); row.appendChild(el('span', '', r.s + (r.s === 1 ? ' connection' : ' connections') + ':'));
+      Object.keys(r.apps).forEach(function (a) { row.appendChild(el('span', 'chip', appName(a) + (r.apps[a] > 1 ? ' ×' + r.apps[a] : ''))); });
+      rb.appendChild(row);
+    });
+    // days of this month
+    var y = +m.month.slice(0, 4), mo = +m.month.slice(5, 7), ndays = new Date(Date.UTC(y, mo, 0)).getUTCDate(), today = new Date().toISOString().slice(0, 10), drows = [], tb = $('days-t');
+    tb.textContent = ''; var hr = el('tr'); hr.append(el('th', '', 'Day'), el('th', '', 'Frames')); tb.appendChild(hr);
+    for (var dd = 1; dd <= ndays; dd++) {
+      var key = m.month + '-' + String(dd).padStart(2, '0'), v = (m.days || {})[key] || 0;
+      drows.push({ v: v, label: key, today: key === today, tick: dd === 1 || dd % 5 === 0 ? String(dd) : '' });
+      if (v) { var tr = el('tr'); tr.append(el('td', '', key), el('td', '', v.toLocaleString())); tb.appendChild(tr); }
+    }
+    bars($('days'), drows, { label: 'Frames per day this month' });
+    // the last 48 hours
+    var hrows = [], now = Date.now();
+    for (var h = 47; h >= 0; h--) {
+      var t = new Date(now - h * 3600000), k = t.toISOString().slice(0, 13), lh = t.getHours();
+      hrows.push({ v: (u.hours || {})[k] || 0, label: t.toLocaleString([], { weekday: 'short', hour: 'numeric' }), today: h === 0, tick: lh % 6 === 0 ? (lh === 0 ? t.toLocaleDateString([], { weekday: 'short' }) : lh + ':00') : '' });
+    }
+    bars($('hours'), hrows, { label: 'Frames per hour, last 48 hours' });
+    hbars($('apps'), m.apps || {}, appName);
+    hbars($('who'), m.who || {}, function (k) { return k[0] === '@' ? k.slice(1) : 'key ' + k.slice(0, 9) + '…'; });
+  }
+
+  function load() {
+    return fetch(RELAY + '/admin/usage', { headers: { authorization: 'Bearer ' + token } })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); })
+      .then(draw);
+  }
+  function tick() { if (!document.hidden && token) load().catch(function () {}); }
+  $('go').onclick = function () {
+    token = $('tok').value.trim(); $('login-err').textContent = '';
+    load().then(function () { try { sessionStorage.setItem('ih-admin', token); } catch (err) {} clearInterval(timer); timer = setInterval(tick, 60000); },
+      function (e) { $('login-err').textContent = /fetch|Failed/i.test(e.message) ? 'Can’t reach the relay. Is the new version deployed?' : e.message; });
+  };
+  $('tok').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('go').click(); });
+  $('refresh').onclick = function () { load().catch(function (e) { $('stamp').textContent = e.message; }); };
+  document.addEventListener('visibilitychange', tick);
+  if (token) load().then(function () { timer = setInterval(tick, 60000); }, function () {});
+})();
+</script>
+</body>
+</html>
