@@ -42,6 +42,16 @@ button[aria-pressed="true"] { background: var(--flame); border-color: var(--flam
 .empty { color: var(--muted); font-family: var(--type); }
 .small { font: 400 .82rem/1.45 var(--type); color: var(--muted); margin-top: 10px; }
 .ih-dot.on { background: #22a06b !important; }
+/* MEGA·CV, always on offer */
+.mcv { display: grid; grid-template-columns: 1fr auto; gap: 14px 24px; align-items: center; border: 2px solid var(--flame); box-shadow: 6px 6px 0 var(--teal); }
+.mcv::before { background: color-mix(in srgb, var(--teal) 30%, transparent) !important; }
+@media (max-width: 640px) { .mcv { grid-template-columns: 1fr; } }
+.mcv h2 { color: var(--flame); }
+.mcv-h { font: 900 clamp(1.8rem, 5vw, 2.6rem)/.95 var(--display); text-transform: uppercase; margin: 0; }
+.mcv-steps { margin: 8px 0 0; padding-left: 1.3em; display: grid; gap: 2px; }
+.mcv-go { display: grid; gap: 8px; justify-items: start; }
+.peer.is-mcv { border: 2px solid var(--flame); }
+.peer .mcv-tag { font: 700 .7rem var(--type); letter-spacing: .1em; text-transform: uppercase; color: var(--flame); margin-left: 8px; }
 /* the patch matrix */
 .mx-wrap { overflow-x: auto; margin-top: 6px; }
 .mx { border-collapse: collapse; }
@@ -70,6 +80,16 @@ button[aria-pressed="true"] { background: var(--flame); border-color: var(--flam
     <h1>CON<span>sole</span></h1>
     <p class="lede">Move another app's controls from anywhere. Join the same room as an app that has Invisible Hands in it, and its controls appear below: drag one, set an LFO swinging it, fire an envelope at it, or patch one app’s output into another app’s knob.</p>
   </header>
+
+  <section class="mcv" aria-labelledby="hMcv">
+    <div>
+      <h2 id="hMcv">For more expression</h2>
+      <p class="mcv-h">Pop in MEGA·CV</p>
+      <p class="small" style="margin-top:4px">The console moves knobs by hand, with simple swings and a patch bay. MEGA·CV is a whole modular synth in a tab: oscillators, envelopes, sequencers, sound and video, and any of them can swing any knob in this room. It’s the best modulator for Invisible Hands.</p>
+      <ol class="small mcv-steps"><li>Join or start a room here.</li><li>Press <b>Pop in MEGA·CV</b>. It opens in this room.</li><li>In MEGA·CV: <b>+ Module → Invisible Hands</b>. It links by itself, and every knob here shows up in its pickers.</li></ol>
+    </div>
+    <div class="mcv-go"><a class="btn big primary" id="mcvGo" href="https://crumplabsandbox.github.io/mega-cv/" target="_blank" rel="noopener">Pop in MEGA·CV ↗</a><span class="small" id="mcvState"></span></div>
+  </section>
 
   <div class="grid">
     <section aria-labelledby="hLink">
@@ -105,7 +125,7 @@ button[aria-pressed="true"] { background: var(--flame); border-color: var(--flam
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-const hands=InvisibleHands.create({app:'console',name:'Console'});
+const hands=InvisibleHands.create({app:'console',name:'Console',megacv:false});   // the MEGA·CV card above does that job here
 $('link').appendChild(hands.panel());
 
 // a relay address typed here is remembered on this device only
@@ -231,10 +251,11 @@ function render(){
   const list=hands.peers;
   if(hands.status==='on'&&!list.length){const s=document.createElement('section');s.className='empty';s.textContent='Nobody else is in this room yet. Open an app with the invite link, or send the link to someone.';box.appendChild(s);return;}
   for(const peer of list){
-    const sec=document.createElement('section');sec.className='peer';
+    const sec=document.createElement('section');sec.className='peer'+(peer.app==='mega-cv'?' is-mcv':'');
     const h=document.createElement('h3');h.textContent=peer.name;sec.appendChild(h);
+    if(peer.app==='mega-cv'){const t=document.createElement('span');t.className='mcv-tag';t.textContent='modulating this room';h.appendChild(t);}
     const a=document.createElement('p');a.className='app';a.textContent=peer.app+' · '+peer.params.length+(peer.params.length===1?' control':' controls');sec.appendChild(a);
-    if(!peer.params.length){const n=document.createElement('p');n.className='small';n.textContent='This app has no controls to move.';sec.appendChild(n);}
+    if(!peer.params.length){const n=document.createElement('p');n.className='small';n.textContent=peer.app==='mega-cv'?'It does the moving: patch its signals into the knobs here from inside MEGA·CV.':'This app has no controls to move.';sec.appendChild(n);}
     for(const p of peer.params){
       const row=document.createElement('div');row.className='row';
       const name=document.createElement('span');name.className='name';name.textContent=p.label;name.title=p.id;
@@ -266,6 +287,12 @@ function render(){
     box.appendChild(sec);
   }
 }
+function mcvLink(){
+  const go=$('mcvGo'),st=$('mcvState'),here=hands.peers.some(q=>q.app==='mega-cv');
+  go.href='https://crumplabsandbox.github.io/mega-cv/'+(hands.room?'?room='+encodeURIComponent(hands.room):'');
+  st.textContent=here?'MEGA·CV is in this room.':hands.room?'Opens in room '+hands.room+'.':'Join or start a room first, so it lands in the same one.';
+}
+hands.on('peers',mcvLink);hands.on('status',mcvLink);mcvLink();
 hands.on('peers',render);hands.on('status',render);hands.on('peers',renderMatrix);hands.on('status',renderMatrix);renderMatrix();
 hands.on('state',peer=>{for(const k in peer.state){const b=meters.get(peer.id+'/'+k);if(b)b.style.width=Math.round(peer.state[k]*100)+'%';}});
 render();

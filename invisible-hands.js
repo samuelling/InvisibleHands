@@ -22,6 +22,8 @@
     'vole wasp yarn zinc bark clay dove elm fawn glow hush ink jute knot lime mist ' +
     'nook oat pond rye soot teal umber vine wick yew birch crow drift ember frost grain').split(' ');
   var ROOM = /^[a-z0-9][a-z0-9-]{3,47}$/;
+  // the modulator to bring in for more expression: a modular synth whose Hands module swings any knob in a room
+  var MEGACV = 'https://crumplabsandbox.github.io/mega-cv/';
 
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
   function rand(n) {
@@ -63,6 +65,7 @@
           '.ih-dot{flex:none;width:10px;height:10px;border-radius:50%;background:currentColor;opacity:.3}.ih-dot.on{opacity:1;background:#5fe0c0}.ih-dot.wait{opacity:.8;background:#e8b04a}' +
           '.ih-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:1.05em;letter-spacing:.03em;user-select:all;-webkit-user-select:all;word-break:break-all}' +
           '.ih-peers{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}.ih-peers li{padding:0;margin:0}.ih-peers li::before{content:none}' +
+          '.ih-mcv{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--ih-flame,#FF5A1F)}' +
           '.ih-note{margin:0;opacity:.72;font-size:.9em;line-height:1.4}.ih label{display:flex;gap:8px;align-items:center;cursor:pointer}';
   var STYLE = '.ih-icon{display:inline-block;vertical-align:middle;flex:none;overflow:visible}' +
     '.ih-icon .ih-flame,.ih-icon .ih-pointer{transition:transform .25s cubic-bezier(.3,1.6,.5,1)}' +
@@ -304,6 +307,12 @@
           };
           bye.onclick = function () { leave(); };
           r3.appendChild(copy); r3.appendChild(bye); box.appendChild(r3);
+          if (opts.megacv !== false && app !== 'mega-cv') {   // create({ megacv: false }) leaves this out
+            var mc = el('a', 'ih-mcv', 'Bring in MEGA·CV ↗');
+            mc.href = MEGACV + '?room=' + encodeURIComponent(room); mc.target = '_blank'; mc.rel = 'noopener';
+            mc.title = 'A modular synth that can swing every knob in this room. Add its Invisible Hands module and it joins by itself.';
+            box.appendChild(mc);
+          }
           var list = el('ul', 'ih-peers');
           if (!peers.size) list.appendChild(el('li', 'ih-note', status === 'on' ? 'Nobody else is here yet. Send them the invite link.' : ''));
           peers.forEach(function (p) { list.appendChild(el('li', '', p.name + ' · ' + p.params.length + (p.params.length === 1 ? ' control' : ' controls'))); });

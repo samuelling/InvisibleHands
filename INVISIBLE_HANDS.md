@@ -108,7 +108,7 @@ toolbar.append(hands.badge());           // optional: a button with the mark tha
 
 Only controls that are actually offered get a tag. `InvisibleHands.icon({ size: 24 })` draws the mark alone if the app needs it somewhere else. The look is described at https://samuelling.github.io/InvisibleHands/brand/.
 
-`panel()` returns a plain element that takes the host page's font and colour. Put it where the app keeps its settings or behind a small button (a hand icon, or the word "Hands"). Don't put it over the main view by default. If you build your own UI instead, use `hands.status`, `hands.room`, `hands.peers`, `hands.inviteUrl()`, `hands.join(code)`, `hands.newRoom()`, `hands.leave()`, and the `hands.allow` switch.
+`panel()` returns a plain element that takes the host page's font and colour. Once in a room it also offers **Bring in MEGA·CV**, which opens that modular synth in the same room for richer modulation; leave it on unless the person says otherwise (`create({ megacv: false })` hides it). Put it where the app keeps its settings or behind a small button (a hand icon, or the word "Hands"). Don't put it over the main view by default. If you build your own UI instead, use `hands.status`, `hands.room`, `hands.peers`, `hands.inviteUrl()`, `hands.join(code)`, `hands.newRoom()`, `hands.leave()`, and the `hands.allow` switch.
 
 A page opened with `?room=<code>` joins that room by itself, so an invite link is just the app's address plus `?room=`.
 

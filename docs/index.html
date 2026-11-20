@@ -214,7 +214,7 @@ npm run dev                  <span class="c"># → ws://localhost:8787</span></p
 <h3>JavaScript</h3>
 <table>
   <tr><th>Call</th><th>Does</th></tr>
-  <tr><td><code>InvisibleHands.create(opts)</code></td><td><code>app</code>, <code>name</code>, <code>params</code>, <code>outs</code>, <code>relay</code>, <code>stateHz</code> (15), <code>autoJoin</code> (true: join <code>?room=</code>).</td></tr>
+  <tr><td><code>InvisibleHands.create(opts)</code></td><td><code>app</code>, <code>name</code>, <code>params</code>, <code>outs</code>, <code>relay</code>, <code>stateHz</code> (15), <code>autoJoin</code> (true: join <code>?room=</code>), <code>megacv</code> (true: the panel offers “Bring in MEGA·CV”, opening it in the same room).</td></tr>
   <tr><td><code>hands.panel()</code></td><td>The built-in panel element.</td></tr>
   <tr><td><code>hands.join(code)</code> · <code>newRoom()</code> · <code>leave()</code></td><td>Rooms. <code>InvisibleHands.makeCode()</code> invents a code.</td></tr>
   <tr><td><code>hands.set(to, id, v)</code> · <code>mod</code> · <code>ramp(to, id, pts, at)</code></td><td>Move someone. <code>to</code>: peer, peer id, <code>'app:&lt;slug&gt;'</code> or <code>null</code>.</td></tr>
